@@ -10,6 +10,17 @@ import { ConfigDetails } from './pages/config-details/config-details';
 export const routes: Routes = [
     {
         path: '',
+        component: AuthLayout,
+        children: [
+            {
+                path: 'config',
+                loadComponent: () => import('./pages/config/config').then((m) => m.Config),
+            },
+            { path: '', redirectTo: 'config', pathMatch: 'full' },
+        ],
+    },
+    {
+        path: '',
         component: MainLayout,
         children: [
             { path: 'home', loadComponent: () => import('./pages/home/home').then((m) => m.Home) },
@@ -36,17 +47,5 @@ export const routes: Routes = [
             { path: '', redirectTo: 'home', pathMatch: 'full' },
         ],
     },
-    {
-        path: '',
-        component: AuthLayout,
-        children: [
-            {
-                path: 'config',
-                loadComponent: () => import('./pages/config/config').then((m) => m.Config),
-            },
-            { path: '', redirectTo: 'config', pathMatch: 'full' },
-        ],
-    },
-
     { path: '**', redirectTo: '' },
 ];

@@ -16,6 +16,13 @@
     npx tauri dev # npm run tauri dev
     ```
 
+- run dev desktop
+
+    ```bash
+    sudo kill -9 $(sudo lsof -t -i:4200)
+    npm run tauri dev
+    ```
+
 - run dev android
 
     ```bash
