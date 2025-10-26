@@ -1,5 +1,7 @@
 <!-- Header / Trigger button -->
-<header class="flex items-center justify-between p-4 bg-green-900 text-white">
+<header
+    class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 pt-10 bg-green-900 text-white"
+>
     <button (click)="toggleDrawer()" class="p-2 focus:outline-none">
         <!-- Icon menu -->
         <svg
@@ -18,8 +20,7 @@
 </header>
 
 <!-- Drawer overlay -->
-
-@if(isDrawerOpen) {
+@if (isDrawerOpen) {
 <div
     class="fixed inset-0 bg-black/50 z-30 transition-opacity duration-300"
     (click)="toggleDrawer()"
@@ -28,13 +29,13 @@
 
 <!-- Drawer sidebar -->
 <nav
-    class="fixed top-0 left-0 z-40 h-screen w-64 bg-green-800 p-4 py-[50px] transform transition-transform duration-300"
+    class="fixed top-0 left-0 z-40 h-screen w-64 bg-green-800 p-4 pt-30 transform transition-transform duration-300"
     [class.translate-x-0]="isDrawerOpen"
     [class.-translate-x-full]="!isDrawerOpen"
 >
     <!-- Header -->
     <div class="flex justify-between items-center mb-4">
-        <h5 class="text-base font-semibold text-gray-500 uppercase dark:text-gray-400">Menu</h5>
+        <h5 class="text-base font-semibold text-gray-400 uppercase">Menu</h5>
         <button
             (click)="toggleDrawer()"
             class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -55,35 +56,23 @@
 
     <!-- Menu items -->
     <ul class="space-y-2 font-medium">
+        @for (item of navItems; track $index) {
         <li>
             <a
-                routerLink="/home"
-                routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
-                class="flex items-center p-2 rounded-lg text-white hover:bg-gray-100"
+                [routerLink]="item.url"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }"
+                class="flex items-center p-2 rounded-lg text-white hover:bg-gray-100 hover:text-green-800"
             >
-                <span>Dashboard</span>
+                <span>{{ item.name }}</span>
             </a>
         </li>
-        <li>
-            <a
-                routerLink="/users"
-                class="flex items-center p-2 rounded-lg text-white hover:bg-gray-100"
-            >
-                <span>Users</span>
-            </a>
-        </li>
-        <li>
-            <a
-                routerLink="/products"
-                class="flex items-center p-2 rounded-lg text-white hover:bg-gray-100"
-            >
-                <span>Products</span>
-            </a>
-        </li>
+        }
     </ul>
 </nav>
 
 <!-- Main content -->
-<main class="">
+<main class="pt-28">
+    <!-- 👈 thêm padding-top bằng chiều cao header -->
     <router-outlet></router-outlet>
 </main>
