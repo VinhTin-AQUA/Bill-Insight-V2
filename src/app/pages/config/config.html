@@ -1,0 +1,50 @@
+<div class="flex items-center justify-center min-h-screen">
+    <form class="w-full max-w-sm bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
+        <!-- Logo -->
+        <img src="/images/sheets.png" alt="App Logo" class="w-16 h-16 mb-4" />
+
+        <!-- Title -->
+        <h1 class="text-2xl font-semibold text-center mb-6 text-gray-800">Config</h1>
+
+        <!-- SpreadSheet URL -->
+        <div class="w-full mb-5">
+            <label for="email" class="block mb-2 text-sm font-medium text-gray-900">
+                SpreadSheet URL
+            </label>
+            <input
+                type="email"
+                id="email"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                required
+            />
+        </div>
+
+        <!-- SpreadSheet ID -->
+        <div class="w-full mb-5">
+            <label class="block mb-2 text-sm font-medium text-gray-900"> SpreadSheet ID </label>
+            <input
+                type="text"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                required
+            />
+        </div>
+
+        <!-- Credential Path -->
+        <div class="w-full mb-5">
+            <label class="block mb-2 text-sm font-medium text-gray-900"> Credential Path </label>
+            <input
+                type="text"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                required
+            />
+        </div>
+
+        <!-- Submit -->
+        <button
+            type="button"
+            class="w-full p-2.5 text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm me-2 mb-2"
+        >
+            Save
+        </button>
+    </form>
+</div>

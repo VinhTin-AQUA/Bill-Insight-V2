@@ -1,0 +1,89 @@
+<!-- Header / Trigger button -->
+<header class="flex items-center justify-between p-4 bg-green-900 text-white">
+    <button (click)="toggleDrawer()" class="p-2 focus:outline-none">
+        <!-- Icon menu -->
+        <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+    <h1 class="text-lg font-semibold">Bill Insight</h1>
+</header>
+
+<!-- Drawer overlay -->
+
+@if(isDrawerOpen) {
+<div
+    class="fixed inset-0 bg-black/50 z-30 transition-opacity duration-300"
+    (click)="toggleDrawer()"
+></div>
+}
+
+<!-- Drawer sidebar -->
+<nav
+    class="fixed top-0 left-0 z-40 h-screen w-64 bg-green-800 p-4 py-[50px] transform transition-transform duration-300"
+    [class.translate-x-0]="isDrawerOpen"
+    [class.-translate-x-full]="!isDrawerOpen"
+>
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4">
+        <h5 class="text-base font-semibold text-gray-500 uppercase dark:text-gray-400">Menu</h5>
+        <button
+            (click)="toggleDrawer()"
+            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+        >
+            <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Menu items -->
+    <ul class="space-y-2 font-medium">
+        <li>
+            <a
+                routerLink="/home"
+                routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+                class="flex items-center p-2 rounded-lg text-white hover:bg-gray-100"
+            >
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a
+                routerLink="/users"
+                class="flex items-center p-2 rounded-lg text-white hover:bg-gray-100"
+            >
+                <span>Users</span>
+            </a>
+        </li>
+        <li>
+            <a
+                routerLink="/products"
+                class="flex items-center p-2 rounded-lg text-white hover:bg-gray-100"
+            >
+                <span>Products</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<!-- Main content -->
+<main class="">
+    <router-outlet></router-outlet>
+</main>

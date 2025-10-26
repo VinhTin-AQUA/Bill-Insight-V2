@@ -1,0 +1,43 @@
+<div class="bg-gray-50 p-4 flex flex-col gap-4 max-w-md mx-auto">
+    <h1 class="text-xl font-bold text-center text-gray-800 mb-4">Tổng quan tài chính</h1>
+
+    <!-- Tiền mặt -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-2">
+        <div class="flex justify-between items-center">
+            <span class="text-gray-600">Tổng tiền mặt (tháng)</span>
+            <span class="font-semibold text-gray-800">{{ totalCash | number }}đ</span>
+        </div>
+        <div class="flex justify-between items-center">
+            <span class="text-gray-600">Đã dùng</span>
+            <span class="text-red-600 font-medium">{{ usedCash | number }}đ</span>
+        </div>
+        <div class="flex justify-between items-center border-t pt-2 mt-2">
+            <span class="font-semibold text-gray-700">Còn lại</span>
+            <span class="text-green-600 font-bold">{{ remainingCash | number }}đ</span>
+        </div>
+    </div>
+
+    <!-- Ngân hàng -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-2">
+        <div class="flex justify-between items-center">
+            <span class="text-gray-600">Tổng tiền ngân hàng (tháng)</span>
+            <span class="font-semibold text-gray-800">{{ totalBank | number }}đ</span>
+        </div>
+        <div class="flex justify-between items-center">
+            <span class="text-gray-600">Đã dùng</span>
+            <span class="text-red-600 font-medium">{{ usedBank | number }}đ</span>
+        </div>
+        <div class="flex justify-between items-center border-t pt-2 mt-2">
+            <span class="font-semibold text-gray-700">Còn lại</span>
+            <span class="text-green-600 font-bold">{{ remainingBank | number }}đ</span>
+        </div>
+    </div>
+
+    <!-- Tổng còn lại -->
+    <div
+        class="bg-linear-to-r from-green-400 to-green-600 text-white p-4 rounded-2xl shadow-md flex justify-between items-center mt-2"
+    >
+        <span class="font-semibold text-lg">Tổng tiền còn lại</span>
+        <span class="font-bold text-xl">{{ totalRemaining | number }}đ</span>
+    </div>
+</div>
