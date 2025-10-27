@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { ProductGroupByDate } from './models/product';
+import { Component, signal } from '@angular/core';
+import { InvoiceItem, ListInvoiceItems } from './models/invoice-item';
 import { DatePipe, DecimalPipe } from '@angular/common';
+import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
 
 @Component({
     selector: 'app-list-invoices',
@@ -9,28 +10,32 @@ import { DatePipe, DecimalPipe } from '@angular/common';
     styleUrl: './list-invoices.scss',
 })
 export class ListInvoices {
-    productGroups: ProductGroupByDate[] = [
-        {
-            date: '2025-10-25',
-            products: [
-                { name: 'Sản phẩm A', cash: 200000, bank: 150000 },
-                { name: 'Sản phẩm B', cash: 100000, bank: 50000 },
-            ],
-        },
-        {
-            date: '2025-10-26',
-            products: [
-                { name: 'Sản phẩm C', cash: 300000, bank: 0 },
-                { name: 'Sản phẩm D', cash: 0, bank: 250000 },
-            ],
-        },
-    ];
+    productGroups = signal<ListInvoiceItems[]>([]);
 
-    getTotalCash(products: any[]) {
-        return products.reduce((sum, p) => sum + p.cash, 0);
+    constructor(private tauriCommandSerivce: TauriCommandSerivce) {}
+
+    ngOnInit() {
+        this.getInvoices();
     }
 
-    getTotalBank(products: any[]) {
-        return products.reduce((sum, p) => sum + p.bank, 0);
+    async getInvoices() {
+        const r = await this.tauriCommandSerivce.invokeCommand<ListInvoiceItems[]>(
+            TauriCommandSerivce.GET_INVOICES,
+            {}
+        );
+
+        if (r) {
+            this.productGroups.set([...r]);
+        } else {
+            alert('null');
+        }
+    }
+
+    getTotalCash(products: InvoiceItem[]) {
+        return products.reduce((sum, p) => sum + p.cash_price, 0);
+    }
+
+    getTotalBank(products: InvoiceItem[]) {
+        return products.reduce((sum, p) => sum + p.bank_price, 0);
     }
 }

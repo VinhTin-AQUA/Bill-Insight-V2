@@ -1,5 +1,7 @@
 mod commands;
 mod services;
+mod models;
+mod helpers;
 
 use commands::*;
 
@@ -18,6 +20,7 @@ pub fn run() {
     })
     .invoke_handler(tauri::generate_handler![
         init_google_sheet_command,
+        get_invoices
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

@@ -1,20 +1,20 @@
 <div class="p-4 space-y-6 bg-gray-50 min-h-screen">
-    @for (group of productGroups; track $index) {
+    @for (group of productGroups(); track $index) {
     <div class="bg-white rounded-2xl shadow-sm p-4">
         <!-- Ngày -->
         <h2 class="text-lg font-semibold text-gray-800 mb-3 flex items-center justify-between">
-            <span>{{ group.date | date : 'dd/MM/yyyy' }}</span>
-            <span class="text-sm text-gray-400">{{ group.products.length }} sản phẩm</span>
+            <span>{{ group.date }}</span>
+            <span class="text-sm text-gray-400">{{ group.items.length }} sản phẩm</span>
         </h2>
 
         <!-- Danh sách sản phẩm -->
         <div class="divide-y divide-gray-100">
-            @for (product of group.products; track $index) {
+            @for (product of group.items; track $index) {
             <div class="py-3 flex justify-between items-center">
                 <div>
                     <p class="font-medium text-gray-800">{{ product.name }}</p>
-                    <p class="text-xs text-gray-400">Tiền mặt: {{ product.cash | number }}₫</p>
-                    <p class="text-xs text-gray-400">Ngân hàng: {{ product.bank | number }}₫</p>
+                    <p class="text-sm text-gray-800">Tiền mặt: {{ product.cash_price | number}}₫</p>
+                    <p class="text-sm text-gray-800">Ngân hàng: {{ product.bank_price | number }}₫</p>
                 </div>
             </div>
             }
@@ -24,11 +24,11 @@
         <div class="mt-4 p-3 bg-blue-50 rounded-xl text-sm flex justify-between text-gray-700">
             <div>
                 <p class="font-semibold text-blue-600">Tổng tiền mặt</p>
-                <p>{{ getTotalCash(group.products) | number }}₫</p>
+                <p>{{ getTotalCash(group.items) | number }}₫</p>
             </div>
             <div>
                 <p class="font-semibold text-blue-600">Tổng ngân hàng</p>
-                <p>{{ getTotalBank(group.products) | number }}₫</p>
+                <p>{{ getTotalBank(group.items) | number }}₫</p>
             </div>
         </div>
     </div>

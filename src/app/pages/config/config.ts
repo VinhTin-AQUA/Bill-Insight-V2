@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
 import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-config',
@@ -9,24 +10,25 @@ import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-s
     styleUrl: './config.scss',
 })
 export class Config {
-    constructor(private tauriCommandSerivce: TauriCommandSerivce) {}
+    constructor(private tauriCommandSerivce: TauriCommandSerivce, private router: Router) {}
 
     ngOnInit() {
         this.init();
     }
 
     async init() {
-        const r = await this.tauriCommandSerivce.invokeCommand<boolean>(
-            TauriCommandSerivce.INIT_GOOGLE_SHEET_COMMAND,
-            { jsonPath: 'C:/Users/tinhv/Downloads/billinsight-0b2c14cec552.json' }
-        );
+        await this.initGoogleSheetService();
     }
 
-    async test() {
+    async initGoogleSheetService() {
         const r = await this.tauriCommandSerivce.invokeCommand<string>(
             TauriCommandSerivce.INIT_GOOGLE_SHEET_COMMAND,
-            { jsonPath: 'C:/Users/tinhv/Downloads/billinsight-0b2c14cec552.json' }
+            { jsonPath: '/home/newtun/Desktop/Secrets/billinsight-0b2c14cec552.json' }
         );
-        alert(r);
+        if (r) {
+            this.router.navigateByUrl('/home');
+        }
     }
+
+   
 }
