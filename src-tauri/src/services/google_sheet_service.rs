@@ -1,11 +1,11 @@
-use std::collections::HashMap;
-use std::sync::Arc;
-use yup_oauth2::{ServiceAccountAuthenticator, read_service_account_key};
+use crate::helpers::parse_vietnamese_number;
+use crate::models::{InvoiceItem, ListInvoiceItems};
 use reqwest::Client;
 use serde_json::Value;
+use std::collections::HashMap;
+use std::sync::Arc;
 use tokio::sync::OnceCell;
-use crate::models::{InvoiceItem, ListInvoiceItems};
-use crate::helpers::{parse_vietnamese_number};
+use yup_oauth2::{read_service_account_key, ServiceAccountAuthenticator};
 
 const SPREADSHEET_ID: &str = "1D4UeZBozLOjiIlhJ-YSuok-MqIJDCYicoI807K0tj1o"; // <-- Thay bằng ID sheet của bạn
 const SHEET_NAME: &str = "Sheet2"; // <-- Thay bằng tên sheet nếu khác
@@ -39,7 +39,10 @@ pub async fn init_google_sheet(json_path: &str) -> bool {
         }
     };
 
-    let token = match auth.token(&["https://www.googleapis.com/auth/spreadsheets"]).await {
+    let token = match auth
+        .token(&["https://www.googleapis.com/auth/spreadsheets"])
+        .await
+    {
         Ok(token) => token,
         Err(e) => {
             println!("{:?}", e.to_string());
@@ -51,12 +54,15 @@ pub async fn init_google_sheet(json_path: &str) -> bool {
     let has_token = token_opt.is_some();
 
     if !has_token {
-       return false;
+        return false;
     }
 
     let access_token = token_opt.unwrap();
     let client = Client::new();
-    let service = GoogleSheetsService { client ,access_token: access_token.to_string() };
+    let service = GoogleSheetsService {
+        client,
+        access_token: access_token.to_string(),
+    };
 
     let check = GOOGLE_SHEETS_SERVICE.set(Arc::new(service)).is_ok();
 
@@ -75,7 +81,8 @@ pub async fn get_invoices() -> Result<Vec<ListInvoiceItems>, Box<dyn std::error:
         SPREADSHEET_ID, range
     );
 
-    let read_resp = service.client
+    let read_resp = service
+        .client
         .get(&read_url)
         .bearer_auth(service.access_token.as_str())
         .send()
@@ -137,7 +144,9 @@ pub fn group_by_date(value: &Value) -> Vec<ListInvoiceItems> {
 
     // Bỏ qua dòng tiêu đề
     for row_value in values_array.iter().skip(1) {
-        let Some(row) = row_value.as_array() else { continue; };
+        let Some(row) = row_value.as_array() else {
+            continue;
+        };
         if row.len() < 4 {
             continue;
         }
@@ -179,6 +188,3 @@ pub fn group_by_date(value: &Value) -> Vec<ListInvoiceItems> {
 
     result
 }
-
-
-
