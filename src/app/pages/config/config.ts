@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-
 import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
 import { Router } from '@angular/router';
+import { AppFolderHelper, EAppFolder } from '../../shared/helpers/app-folder';
 
 @Component({
     selector: 'app-config',
@@ -30,5 +30,8 @@ export class Config {
         }
     }
 
-   
+    async checkConfig() {
+        await AppFolderHelper.getFolderPath(EAppFolder.ConfigDir);
+        await AppFolderHelper.getFolderPath(EAppFolder.CredentialDir);
+    }
 }
