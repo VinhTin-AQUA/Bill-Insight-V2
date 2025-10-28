@@ -1,9 +1,12 @@
 import { Component } from '@angular/core';
 import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
 import { Router } from '@angular/router';
-import { AppFolderHelper, EAppFolder } from '../../shared/helpers/app-folder';
 import { ConfigService } from './services/config-service';
-import { appLocalDataDir, join } from '@tauri-apps/api/path';
+import { AppFolderHelper } from '../../shared/helpers/app-folder';
+import { EAppFolderNames } from '../../shared/enums/folder-names';
+import { EConfigFileNames } from '../../shared/enums/file-names';
+import { join } from '@tauri-apps/api/path';
+import { exists } from '@tauri-apps/plugin-fs';
 
 @Component({
     selector: 'app-config',
@@ -12,47 +15,58 @@ import { appLocalDataDir, join } from '@tauri-apps/api/path';
     styleUrl: './config.scss',
 })
 export class Config {
-    constructor(private tauriCommandSerivce: TauriCommandSerivce, 
+    constructor(
+        private tauriCommandSerivce: TauriCommandSerivce,
         private configService: ConfigService,
-        private router: Router) {}
+        private router: Router
+    ) {}
 
     ngOnInit() {
         this.init();
     }
 
-    async init() {
-        await this.initGoogleSheetService();
+    private async init() {
+        const checkFileExists = await this.checkConfig();
+        if (!checkFileExists) {
+            return;
+        }
+
+        const checkInit = await this.initGoogleSheetService();
+        if (!checkInit) {
+            return;
+        }
+
+        this.router.navigateByUrl('/home');
     }
 
-    async initGoogleSheetService() {
-
-       
-
-        // kiểm tra data config đã có chưa
-            // nếu có thì init xem thành công không
-            // nếu không thì chọn file init lại
-
+    async saveConfig() {
         
-
-        // const r = await this.tauriCommandSerivce.invokeCommand<string>(
-        //     TauriCommandSerivce.INIT_GOOGLE_SHEET_COMMAND,
-        //     { jsonPath: '/home/newtun/Desktop/Secrets/billinsight-0b2c14cec552.json' }
-        // );
-        // if (r) {
-        //     this.router.navigateByUrl('/home');
-        // }
     }
 
-    async checkConfig() {
-        const r1 = await AppFolderHelper.getFolderPath(EAppFolder.ConfigDir);
-        const r2 =await AppFolderHelper.getFolderPath(EAppFolder.CredentialDir);
 
-        console.log(r1);
-        console.log(r2);
-        
+    /* private methods */
 
-        const checkFileExists = await this.configService.checkConfig();
-        console.log(checkFileExists);
-        
+    private async initGoogleSheetService(): Promise<boolean> {
+        const r = await this.tauriCommandSerivce.invokeCommand<boolean>(
+            TauriCommandSerivce.INIT_GOOGLE_SHEET_COMMAND,
+            { jsonPath: '/home/newtun/Desktop/Secrets/billinsight-0b2c14cec552.json' }
+        );
+        return r === true;
+    }
+
+    private async checkConfig(): Promise<boolean> {
+        const credentialFolder = await AppFolderHelper.getFolderPath(EAppFolderNames.CredentialDir);
+        const configFolder = await AppFolderHelper.getFolderPath(EAppFolderNames.ConfigDir);
+
+        const credentialPath = await join(
+            credentialFolder,
+            EConfigFileNames.GOOGLE_CREDENTIAL_FILE_NAME
+        );
+        const configPath = await join(configFolder, EConfigFileNames.CONFIG_PATH);
+
+        const credentialPathExists = await exists(credentialPath);
+        const configPathExists = await exists(configPath);
+
+        return credentialPathExists && configPathExists;
     }
 }
