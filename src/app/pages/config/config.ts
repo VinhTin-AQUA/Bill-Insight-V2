@@ -21,6 +21,12 @@ export class Config {
     }
 
     async initGoogleSheetService() {
+        // kiểm tra data config đã có chưa
+            // nếu có thì init xem thành công không
+            // nếu không thì chọn file init lại
+
+        
+
         const r = await this.tauriCommandSerivce.invokeCommand<string>(
             TauriCommandSerivce.INIT_GOOGLE_SHEET_COMMAND,
             { jsonPath: '/home/newtun/Desktop/Secrets/billinsight-0b2c14cec552.json' }
