@@ -44,4 +44,5 @@ Thumbs.db
 # Android keystore files
 *.keystore
 *.jks
-/target
+src-tauri/target
+target

@@ -2,7 +2,7 @@ import { appLocalDataDir, join } from '@tauri-apps/api/path';
 import { exists, BaseDirectory, mkdir } from '@tauri-apps/plugin-fs';
 
 export enum EAppFolder {
-    DataDir = 'Data',
+    DataDir = '',
     ConfigDir = 'Configs',
     CredentialDir = 'Credentials',
 }
@@ -12,6 +12,11 @@ export class AppFolderHelper {
 
     static async getFolderPath(folder: EAppFolder) {
         const dataDir = await this.getDataDir();
+
+        if (folder === EAppFolder.DataDir) {
+            return dataDir;
+        }
+
         const configDirExists = await exists(folder, {
             baseDir: BaseDirectory.AppLocalData,
         });
