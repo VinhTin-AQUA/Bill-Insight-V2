@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
 import { Router } from '@angular/router';
 import { ConfigService } from './services/config-service';
@@ -7,42 +7,72 @@ import { EAppFolderNames } from '../../shared/enums/folder-names';
 import { EConfigFileNames } from '../../shared/enums/file-names';
 import { join } from '@tauri-apps/api/path';
 import { exists } from '@tauri-apps/plugin-fs';
+import {
+    ReactiveFormsModule,
+    FormControl,
+    FormGroup,
+    FormBuilder,
+    Validators,
+} from '@angular/forms';
+import { SpreadSheetHelper } from '../../shared/helpers/spread-sheet';
+import { ConfigModel } from './models/config';
 
 @Component({
     selector: 'app-config',
-    imports: [],
+    imports: [ReactiveFormsModule],
     templateUrl: './config.html',
     styleUrl: './config.scss',
 })
 export class Config {
+    selectedFile: File | null = null;
+    configForm!: FormGroup;
+    submitted = false;
+
     constructor(
         private tauriCommandSerivce: TauriCommandSerivce,
         private configService: ConfigService,
-        private router: Router
+        private router: Router,
+        private fb: FormBuilder
     ) {}
 
     ngOnInit() {
         this.init();
-    }
-
-    private async init() {
-        const checkFileExists = await this.checkConfig();
-        if (!checkFileExists) {
-            return;
-        }
-
-        const checkInit = await this.initGoogleSheetService();
-        if (!checkInit) {
-            return;
-        }
-
-        this.router.navigateByUrl('/home');
+        this.initForm();
     }
 
     async saveConfig() {
-        
+        this.submitted = true;
+        if (!this.configForm.valid) {
+            return;
+        }
+
+        if (this.selectedFile) {
+            this.configService.saveCredentialFile(this.selectedFile);
+        }
+
+        const configModel: ConfigModel = {
+            spreadSheetId: this.configForm.controls['spreadSheetId'].value,
+            spreadSheetUrl: this.configForm.controls['spreadSheetUrl'].value,
+            workingSheet: {
+                id: -1,
+                isActive: false,
+                title: '',
+            },
+        };
+
+        await this.configService.saveConfig(configModel);
     }
 
+    onSelectFile(event: any) {
+        const file = event.target.files[0];
+        this.selectedFile = file;
+    }
+
+    onSpreadSheetUrlChange(event: Event) {
+        const inputValue = (event.target as HTMLInputElement).value;
+        const id = SpreadSheetHelper.extractSpreadsheetId(inputValue);
+        this.configForm.controls['spreadSheetId'].setValue(id);
+    }
 
     /* private methods */
 
@@ -68,5 +98,26 @@ export class Config {
         const configPathExists = await exists(configPath);
 
         return credentialPathExists && configPathExists;
+    }
+
+    private async init() {
+        const checkFileExists = await this.checkConfig();
+        if (!checkFileExists) {
+            return;
+        }
+
+        const checkInit = await this.initGoogleSheetService();
+        if (!checkInit) {
+            return;
+        }
+
+        this.router.navigateByUrl('/home');
+    }
+
+    private initForm() {
+        this.configForm = this.fb.group({
+            spreadSheetUrl: ['', [Validators.required]],
+            spreadSheetId: ['', [Validators.required]],
+        });
     }
 }
