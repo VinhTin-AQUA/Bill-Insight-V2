@@ -8,8 +8,35 @@ body {
 }
 
 body {
-    padding:0;
+    padding: 0;
     margin: 0;
     box-sizing: border-box;
     overflow-x: hidden;
+}
+
+.input {
+    @apply rounded-lg px-3 py-2 text-sm outline-none duration-150;
+
+    border: 1px solid #15803d;
+
+    &:focus {
+        box-shadow: 0 0 0.9px 0.9px #15803d;
+    }
+}
+
+.img {
+    @apply h-12 w-full rounded-lg object-contain shadow-sm outline-none;
+    border: 1px solid #15803d;
+}
+
+.icon-btn {
+    @apply text-sm text-green-600 hover:text-green-800 duration-100 cursor-pointer;
+}
+
+.btn-success {
+    @apply px-3 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition;
+}
+
+.btn-danger {
+    @apply px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition;
 }

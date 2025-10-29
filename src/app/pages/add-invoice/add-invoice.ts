@@ -1,10 +1,12 @@
 import { DecimalPipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faArrowsRotate, faTrash, faCirclePlus } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
     selector: 'app-add-invoice',
-    imports: [FormsModule, DecimalPipe],
+    imports: [FormsModule, DecimalPipe, FontAwesomeModule],
     templateUrl: './add-invoice.html',
     styleUrl: './add-invoice.scss',
 })
@@ -17,6 +19,10 @@ export class AddInvoice {
     invoiceItems = [{ name: '', price: 0 }];
     extraItems = [{ name: '', price: 0 }];
     invoiceDate = new Date().toISOString().substring(0, 10);
+
+    faArrowsRotate = faArrowsRotate;
+    faTrash = faTrash;
+    faCirclePlus = faCirclePlus;
 
     get totalBeforeTax() {
         return [...this.invoiceItems, ...this.extraItems].reduce(

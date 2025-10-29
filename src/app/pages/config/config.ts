@@ -36,8 +36,13 @@ export class Config {
     ) {}
 
     ngOnInit() {
-        this.init();
+        try {
+            this.init();
         this.initForm();
+        }
+        catch(e) {
+            alert(e)
+        }
     }
 
     async saveConfig() {
