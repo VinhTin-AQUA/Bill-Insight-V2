@@ -5,15 +5,15 @@
     <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-2">
         <div class="flex justify-between items-center">
             <span class="text-gray-600">Tổng tiền mặt (tháng)</span>
-            <span class="font-semibold text-gray-800">{{ totalCash | number }}đ</span>
+            <span class="font-semibold text-gray-800">{{ sheetStats().total_cash }}đ</span>
         </div>
         <div class="flex justify-between items-center">
             <span class="text-gray-600">Đã dùng</span>
-            <span class="text-red-600 font-medium">{{ usedCash | number }}đ</span>
+            <span class="text-red-600 font-medium">{{ sheetStats().used_cash }}đ</span>
         </div>
         <div class="flex justify-between items-center border-t pt-2 mt-2">
             <span class="font-semibold text-gray-700">Còn lại</span>
-            <span class="text-green-600 font-bold">{{ remainingCash | number }}đ</span>
+            <span class="text-green-600 font-bold">{{ sheetStats().remaining_cash }}đ</span>
         </div>
     </div>
 
@@ -21,15 +21,15 @@
     <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col gap-2">
         <div class="flex justify-between items-center">
             <span class="text-gray-600">Tổng tiền ngân hàng (tháng)</span>
-            <span class="font-semibold text-gray-800">{{ totalBank | number }}đ</span>
+            <span class="font-semibold text-gray-800">{{ sheetStats().total_bank }}đ</span>
         </div>
         <div class="flex justify-between items-center">
             <span class="text-gray-600">Đã dùng</span>
-            <span class="text-red-600 font-medium">{{ usedBank | number }}đ</span>
+            <span class="text-red-600 font-medium">{{ sheetStats().used_bank }}đ</span>
         </div>
         <div class="flex justify-between items-center border-t pt-2 mt-2">
             <span class="font-semibold text-gray-700">Còn lại</span>
-            <span class="text-green-600 font-bold">{{ remainingBank | number }}đ</span>
+            <span class="text-green-600 font-bold">{{ sheetStats().remaining_bank }}đ</span>
         </div>
     </div>
 
@@ -38,6 +38,6 @@
         class="bg-linear-to-r from-green-400 to-green-600 text-white p-4 rounded-2xl shadow-md flex justify-between items-center mt-2"
     >
         <span class="font-semibold text-lg">Tổng tiền còn lại</span>
-        <span class="font-bold text-xl">{{ totalRemaining | number }}đ</span>
+        <span class="font-bold text-xl">{{ sheetStats().total_remaining }}đ</span>
     </div>
 </div>

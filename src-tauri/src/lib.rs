@@ -21,7 +21,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             init_google_sheet_command,
-            get_invoices
+            get_invoices,
+            get_sheet_stats
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

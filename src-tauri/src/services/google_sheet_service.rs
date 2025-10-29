@@ -1,5 +1,5 @@
 use crate::helpers::parse_vietnamese_number;
-use crate::models::{InvoiceItem, ListInvoiceItems};
+use crate::models::{InvoiceItem, ListInvoiceItems, SheetStats};
 use reqwest::Client;
 use serde_json::Value;
 use std::collections::HashMap;
@@ -94,6 +94,45 @@ pub async fn get_invoices() -> Result<Vec<ListInvoiceItems>, Box<dyn std::error:
 
     let grouped = group_by_date(&read_resp);
     Ok(grouped)
+}
+
+pub async fn get_sheet_stats() -> Result<SheetStats, Box<dyn std::error::Error>> {
+    let service = GOOGLE_SHEETS_SERVICE
+        .get()
+        .expect("GOOGLE_SHEETS_SERVICE not initialized");
+
+    let range = format!("{}!E2:K2", SHEET_NAME);
+    let read_url = format!(
+        "https://sheets.googleapis.com/v4/spreadsheets/{}/values/{}",
+        SPREADSHEET_ID, range
+    );
+
+    let resp = service.client
+        .get(&read_url)
+        .bearer_auth(service.access_token.as_str())
+        .send()
+        .await?
+        .json::<serde_json::Value>()
+        .await?;
+
+    let values = resp["values"][0]
+        .as_array()
+        .ok_or("Không tìm thấy dữ liệu trong Google Sheet")?;
+
+    // Hàm tiện ích để làm sạch chuỗi
+    let clean = |s: &serde_json::Value| s.as_str().unwrap_or("").trim().to_string();
+
+    let stats = SheetStats {
+        used_cash: clean(&values[0]),
+        used_bank: clean(&values[1]),
+        total_cash: clean(&values[2]),
+        total_bank: clean(&values[3]),
+        remaining_cash: clean(&values[4]),
+        remaining_bank: clean(&values[5]),
+        total_remaining: clean(&values[6]),
+    };
+
+    Ok(stats)
 }
 
 async fn set_invoices() -> Result<(), Box<dyn std::error::Error>> {
