@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { AppFolderHelper } from '../../../shared/helpers/app-folder';
 import { join } from '@tauri-apps/api/path';
 import { writeFile, writeTextFile } from '@tauri-apps/plugin-fs';
-import { EAppFolderNames } from '../../../shared/enums/folder-names';
-import { EConfigFileNames } from '../../../shared/enums/file-names';
+import { EAppFolderNames } from '../../../core/enums/folder-names';
+import { EConfigFileNames } from '../../../core/enums/file-names';
 import { ConfigModel } from '../models/config';
 
 @Injectable({

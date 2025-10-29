@@ -1,6 +1,6 @@
 import { appLocalDataDir, join } from '@tauri-apps/api/path';
 import { exists, BaseDirectory, mkdir } from '@tauri-apps/plugin-fs';
-import { EAppFolderNames } from '../enums/folder-names';
+import { EAppFolderNames } from '../../core/enums/folder-names';
 
 
 

@@ -3,8 +3,8 @@ import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-s
 import { Router } from '@angular/router';
 import { ConfigService } from './services/config-service';
 import { AppFolderHelper } from '../../shared/helpers/app-folder';
-import { EAppFolderNames } from '../../shared/enums/folder-names';
-import { EConfigFileNames } from '../../shared/enums/file-names';
+import { EAppFolderNames } from '../../core/enums/folder-names';
+import { EConfigFileNames } from '../../core/enums/file-names';
 import { join } from '@tauri-apps/api/path';
 import { exists } from '@tauri-apps/plugin-fs';
 import {
@@ -61,6 +61,7 @@ export class Config {
         };
 
         await this.configService.saveConfig(configModel);
+        await this.init();
     }
 
     onSelectFile(event: any) {
@@ -75,11 +76,30 @@ export class Config {
     }
 
     /* private methods */
+    private async init() {
+        const checkFileExists = await this.checkConfig();
+        if (!checkFileExists) {
+            return;
+        }
+
+        const checkInit = await this.initGoogleSheetService();
+        if (!checkInit) {
+            return;
+        }
+
+        this.router.navigateByUrl('/home');
+    }
 
     private async initGoogleSheetService(): Promise<boolean> {
+        const credentialFolder = await AppFolderHelper.getFolderPath(EAppFolderNames.CredentialDir);
+        const credentialPath = await join(
+            credentialFolder,
+            EConfigFileNames.GOOGLE_CREDENTIAL_FILE_NAME
+        );
+
         const r = await this.tauriCommandSerivce.invokeCommand<boolean>(
             TauriCommandSerivce.INIT_GOOGLE_SHEET_COMMAND,
-            { jsonPath: '/home/newtun/Desktop/Secrets/billinsight-0b2c14cec552.json' }
+            { jsonPath: credentialPath }
         );
         return r === true;
     }
@@ -98,20 +118,6 @@ export class Config {
         const configPathExists = await exists(configPath);
 
         return credentialPathExists && configPathExists;
-    }
-
-    private async init() {
-        const checkFileExists = await this.checkConfig();
-        if (!checkFileExists) {
-            return;
-        }
-
-        const checkInit = await this.initGoogleSheetService();
-        if (!checkInit) {
-            return;
-        }
-
-        this.router.navigateByUrl('/home');
     }
 
     private initForm() {
