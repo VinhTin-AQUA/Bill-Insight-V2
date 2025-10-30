@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faArrowsRotate, faTrash, faCirclePlus } from '@fortawesome/free-solid-svg-icons';
+import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
 
 @Component({
     selector: 'app-add-invoice',
@@ -24,6 +25,8 @@ export class AddInvoice {
     faTrash = faTrash;
     faCirclePlus = faCirclePlus;
 
+    constructor(private tauriCommandSerivce: TauriCommandSerivce) {}
+
     get totalBeforeTax() {
         return [...this.invoiceItems, ...this.extraItems].reduce(
             (a, b) => a + (Number(b.price) || 0),
@@ -44,11 +47,6 @@ export class AddInvoice {
     }
 
     ngOnInit() {}
-
-    loadCaptcha() {
-        // call API hoặc mock
-        this.captchaImage = 'https://dummyimage.com/120x40/cccccc/000000&text=AB12';
-    }
 
     getInvoiceInfo() {
         alert('Nhận thông tin hóa đơn...');
@@ -79,6 +77,25 @@ export class AddInvoice {
             date: this.invoiceDate,
         });
         alert('Hóa đơn đã được lưu!');
+    }
+
+    async loadCaptcha() {
+        // get captcha
+        // send api lấy url tải file xml
+        // tải file xml về temp
+        // đọc dữ liệu từ file xml
+
+        // get_captcha_and_asp_session
+        const r = await this.tauriCommandSerivce.invokeCommand<any>(
+            'get_captcha_and_asp_session',
+            {}
+        );
+
+        console.log(r);
+        
+
+        // call API hoặc mock
+        // this.captchaImage = 'https://dummyimage.com/120x40/cccccc/000000&text=AB12';
     }
 
     private numberToWords(num: number): string {
