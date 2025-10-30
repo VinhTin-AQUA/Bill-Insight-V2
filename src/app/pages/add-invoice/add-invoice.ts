@@ -1,9 +1,14 @@
 import { DecimalPipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faArrowsRotate, faTrash, faCirclePlus } from '@fortawesome/free-solid-svg-icons';
 import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
+import { CaptchaSession } from './models/captcha-session';
+import { AppFolderHelper } from '../../shared/helpers/app-folder';
+import { EAppFolderNames } from '../../core/enums/folder-names';
+import { convertFileSrc } from '@tauri-apps/api/core';
+import { ReadXmlDataResult } from './models/xml_data';
 
 @Component({
     selector: 'app-add-invoice',
@@ -13,7 +18,6 @@ import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-s
 })
 export class AddInvoice {
     seller = { mst: '3423542534', address: '123 Thong Nhat Street', phone: '98765432', other: '' };
-    captchaImage: string | null = null;
     captchaInput = '';
     invoiceCode = '';
     invoiceCT = '';
@@ -24,6 +28,11 @@ export class AddInvoice {
     faArrowsRotate = faArrowsRotate;
     faTrash = faTrash;
     faCirclePlus = faCirclePlus;
+    captchaSession = signal<CaptchaSession>({
+        aspnet_session_id: '',
+        captcha_path: '',
+        sv_id: '',
+    });
 
     constructor(private tauriCommandSerivce: TauriCommandSerivce) {}
 
@@ -47,10 +56,6 @@ export class AddInvoice {
     }
 
     ngOnInit() {}
-
-    getInvoiceInfo() {
-        alert('Nhận thông tin hóa đơn...');
-    }
 
     addInvoiceItem() {
         this.invoiceItems.push({ name: '', price: 0 });
@@ -80,22 +85,39 @@ export class AddInvoice {
     }
 
     async loadCaptcha() {
-        // get captcha
-        // send api lấy url tải file xml
-        // tải file xml về temp
-        // đọc dữ liệu từ file xml
+        const tempFolder = await AppFolderHelper.getFolderPath(EAppFolderNames.TempDir);
+        const captcha_and_asp_session =
+            await this.tauriCommandSerivce.invokeCommand<CaptchaSession>(
+                TauriCommandSerivce.GET_CAPTCHA_AND_ASP_SESSION,
+                { folder: tempFolder }
+            );
 
-        // get_captcha_and_asp_session
-        const r = await this.tauriCommandSerivce.invokeCommand<any>(
-            'get_captcha_and_asp_session',
-            {}
+        if (!captcha_and_asp_session) {
+            return;
+        }
+
+        this.captchaSession.set({
+            captcha_path: convertFileSrc(captcha_and_asp_session.captcha_path),
+            aspnet_session_id: captcha_and_asp_session.aspnet_session_id,
+            sv_id: captcha_and_asp_session.sv_id,
+        });
+    }
+
+    async getInvoiceInfo() {
+        const tempFolder = await AppFolderHelper.getFolderPath(EAppFolderNames.TempDir);
+        const xml_data = await this.tauriCommandSerivce.invokeCommand<ReadXmlDataResult>(
+            TauriCommandSerivce.GET_XML_INVOICE_DATA,
+            {
+                svId: this.captchaSession().sv_id,
+                aspSession: this.captchaSession().aspnet_session_id,
+                captcha: this.captchaInput,
+                phone: this.invoiceCT,
+                invoiceNum: this.invoiceCode,
+                folder: tempFolder,
+            }
         );
 
-        console.log(r);
-        
-
-        // call API hoặc mock
-        // this.captchaImage = 'https://dummyimage.com/120x40/cccccc/000000&text=AB12';
+        console.log(xml_data);
     }
 
     private numberToWords(num: number): string {

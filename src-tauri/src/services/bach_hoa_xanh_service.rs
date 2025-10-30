@@ -1,18 +1,13 @@
 use std::collections::HashMap;
 use std::fs;
-// use std::path::PathBuf;
+use std::path::Path;
 use std::sync::Arc;
-
-// use cookie_store::Cookie;
 use reqwest::{Client};
 use reqwest_cookie_store::{CookieStoreMutex, CookieStore};
-
 use regex::Regex;
-use quick_xml::Reader;
-// use quick_xml::events::Event;
 use tokio::io::AsyncWriteExt;
 
-use crate::models::{CookieModel,NBan,HHDVu,TToan};
+use crate::models::{CookieModel, NBan, HHDVu, TToan, TTKhac, LTSuat, ReadXmlDataResult};
 
 pub struct BachHoaXanhService {
     client: Client,
@@ -35,7 +30,7 @@ impl BachHoaXanhService {
         }
     }
 
-    pub async fn get_captcha_and_asp_session(&self) -> anyhow::Result<Option<CookieModel>> {
+    pub async fn get_captcha_and_asp_session(&self, folder: String) -> anyhow::Result<Option<CookieModel>> {
         let (sv_id, prefix) = self.get_prefix_and_svid().await?;
         if sv_id.is_none() || prefix.is_none() {
             return Ok(None);
@@ -52,13 +47,15 @@ impl BachHoaXanhService {
             .bytes()
             .await?;
 
-        let captcha_path = std::env::temp_dir().join(format!("{}.jpeg", uuid::Uuid::new_v4()));
+        let base = Path::new(folder.as_str());
+        let captcha_path = base.join(format!("{}.jpeg", uuid::Uuid::new_v4()));
+
         let mut file = tokio::fs::File::create(&captcha_path).await?;
         file.write_all(&bytes).await?;
 
         // Lấy cookie ASP.NET_SessionId
         let asp_session = {
-            let store = self.cookie_store.lock().unwrap();
+            let store = self.cookie_store.lock().expect("Failed to lock cookie_store");
             // Sao chép cookie ra Vec để tránh lifetime issue
             let cookies: Vec<_> = store.iter_any().map(|c| c.clone()).collect();
 
@@ -72,18 +69,19 @@ impl BachHoaXanhService {
         Ok(Some(CookieModel {
             sv_id,
             aspnet_session_id: asp_session,
-            captcha_path: captcha_path.to_string_lossy().to_string(),
+            captcha_path: captcha_path.display().to_string(),
         }))
     }
 
-    pub async fn send_api(
+    pub async fn get_xml_invoice_data(
         &self,
         sv_id: &str,
         asp_session: &str,
         captcha: &str,
         phone: &str,
         invoice_num: &str,
-    ) -> anyhow::Result<(String, String, String)> {
+        folder: &str
+    ) -> anyhow::Result<Option<ReadXmlDataResult>> {
         let url = format!("{}/Home/ListInvoice", self.api_url);
         let body = format!("phone={}&invoiceNum={}&captcha={}", phone, invoice_num, captcha);
 
@@ -97,40 +95,167 @@ impl BachHoaXanhService {
             .text()
             .await?;
 
-        Ok(Self::get_urls(&resp)?)
+        // url_xem, url_tai_hdchuyen_doi, url_tai_xml
+        let (_, _, url_tai_xml) = Self::get_urls(&resp)?;
+        let xml_path = Self::download_xml_file(&self, url_tai_xml.as_str(), folder).await?;
+        let read_xml_result = Self::parse_xml_data(&self, xml_path.as_str()).await?;
+        Ok(Some(read_xml_result))
     }
 
-    pub async fn download_xml_file(&self, xml_url: &str) -> anyhow::Result<String> {
+    async fn download_xml_file(&self, xml_url: &str, folder: &str) -> anyhow::Result<String> {
         let bytes = self.client.get(xml_url).send().await?.bytes().await?;
-        let file_path = std::env::temp_dir().join(format!("{}.xml", uuid::Uuid::new_v4()));
+
+        let base = Path::new(folder);
+        let file_path = base.join(format!("{}.xml", uuid::Uuid::new_v4()));
+
         fs::write(&file_path, &bytes)?;
         Ok(file_path.to_string_lossy().to_string())
     }
 
     // ⚙️ Tối giản, chỉ đọc dữ liệu XML demo
-    pub async fn parse_xml_data(&self, xml_path: &str) -> anyhow::Result<(NBan, Vec<HHDVu>, TToan)> {
-        let content = fs::read_to_string(xml_path)?;
-        let mut reader = Reader::from_str(&content);
-        reader.trim_text(true);
+    async fn parse_xml_data(&self, xml_path: &str) -> anyhow::Result<ReadXmlDataResult> {
+        let xml_content = tokio::fs::read_to_string(xml_path).await?;
 
-        // ⚠️ Ở đây bạn có thể dùng `serde_xml_rs` hoặc `quick-xml` chi tiết hơn để parse XML thành struct
-        // Mình chỉ đặt placeholder cho phần này vì XML hoá đơn có cấu trúc khá phức tạp
+        // Ta parse thủ công bằng cách đọc từng section
+        let doc = roxmltree::Document::parse(xml_content.as_str())?;
+
+        // --- NBan ---
+        let nban_node = doc
+            .descendants()
+            .find(|n| n.tag_name().name() == "NBan")
+            .ok_or_else(|| anyhow::anyhow!("Không tìm thấy NBan"))?;
+        let ten = nban_node
+            .descendants()
+            .find(|n| n.tag_name().name() == "Ten")
+            .and_then(|n| n.text())
+            .unwrap_or("")
+            .to_string();
+        let mst = nban_node
+            .descendants()
+            .find(|n| n.tag_name().name() == "MST")
+            .and_then(|n| n.text())
+            .unwrap_or("")
+            .to_string();
+        let dchi = nban_node
+            .descendants()
+            .find(|n| n.tag_name().name() == "DChi")
+            .and_then(|n| n.text())
+            .unwrap_or("")
+            .to_string();
+        let sdt = nban_node
+            .descendants()
+            .find(|n| n.tag_name().name() == "SDThoai")
+            .and_then(|n| n.text())
+            .unwrap_or("")
+            .to_string();
+
+        let tt_khac: Vec<TTKhac> = nban_node
+            .descendants()
+            .filter(|n| n.tag_name().name() == "TTin")
+            .map(|x| TTKhac {
+                t_truong: x
+                    .descendants()
+                    .find(|c| c.tag_name().name() == "TTruong")
+                    .and_then(|c| c.text())
+                    .unwrap_or("")
+                    .to_string(),
+                kd_lieu: x
+                    .descendants()
+                    .find(|c| c.tag_name().name() == "KDLieu")
+                    .and_then(|c| c.text())
+                    .unwrap_or("")
+                    .to_string(),
+                d_lieu: x
+                    .descendants()
+                    .find(|c| c.tag_name().name() == "DLieu")
+                    .and_then(|c| c.text())
+                    .unwrap_or("")
+                    .to_string(),
+            })
+            .collect();
+
         let nban = NBan {
-            ten: "Demo".to_string(),
-            mst: "0123456789".to_string(),
-            d_chi: "HCM".to_string(),
-            sdt: "0900000000".to_string(),
-            tt_khac: vec![],
+            ten,
+            mst,
+            d_chi: dchi,
+            sdt,
+            tt_khac,
         };
 
-        Ok((nban, vec![], TToan {
-            t_httl_t_suat: vec![],
-            tg_tc_thue: 0.0,
-            tg_t_thue: 0.0,
-            tg_tt_tb_so: 0.0,
-            tg_tt_tb_chu: "".to_string(),
-            tt_khac: vec![],
-        }))
+        // --- HHDVu ---
+        let hhdvu_list: Vec<HHDVu> = doc
+            .descendants()
+            .filter(|n| n.tag_name().name() == "HHDVu")
+            .map(|x| {
+                let get = |tag: &str| -> String {
+                    x.descendants()
+                        .find(|n| n.tag_name().name() == tag)
+                        .and_then(|n| n.text())
+                        .unwrap_or("")
+                        .to_string()
+                };
+                let sl = get("SLuong").parse::<i32>().unwrap_or(0);
+                let dg = get("DGia").parse::<f64>().unwrap_or(0.0);
+                let tt = get("ThTien").parse::<f64>().unwrap_or(0.0);
+                HHDVu::new(&get("MHHDVu"), &get("THHDVu"), &get("DVTinh"), sl, dg, tt, &get("TSuat"))
+            })
+            .collect();
+
+        // --- TToan ---
+        let ttoan_node = doc
+            .descendants()
+            .find(|n| n.tag_name().name() == "TToan")
+            .ok_or_else(|| anyhow::anyhow!("Không tìm thấy TToan"))?;
+
+        let t_httl_t_suat: Vec<LTSuat> = ttoan_node
+            .descendants()
+            .filter(|n| n.tag_name().name() == "LTSuat")
+            .map(|x| LTSuat {
+                t_suat: x
+                    .descendants()
+                    .find(|c| c.tag_name().name() == "TSuat")
+                    .and_then(|c| c.text())
+                    .unwrap_or("")
+                    .to_string(),
+                th_tien: x
+                    .descendants()
+                    .find(|c| c.tag_name().name() == "ThTien")
+                    .and_then(|c| c.text())
+                    .unwrap_or("0")
+                    .parse()
+                    .unwrap_or(0.0),
+                t_thue: x
+                    .descendants()
+                    .find(|c| c.tag_name().name() == "TThue")
+                    .and_then(|c| c.text())
+                    .unwrap_or("0")
+                    .parse()
+                    .unwrap_or(0.0),
+            })
+            .collect();
+
+        let ttoan = TToan {
+            t_httl_t_suat,
+            tg_tc_thue: Self::get_text(&ttoan_node, "TgTCThue").parse().unwrap_or(0.0),
+            tg_t_thue: Self::get_text(&ttoan_node, "TgTThue").parse().unwrap_or(0.0),
+            tg_tt_tb_so: Self::get_text(&ttoan_node, "TgTTTBSo").parse().unwrap_or(0.0),
+            tg_tt_tb_chu: Self::get_text(&ttoan_node, "TgTTTBChu"),
+            tt_khac: ttoan_node
+                .descendants()
+                .filter(|n| n.tag_name().name() == "TTin")
+                .map(|x| TTKhac {
+                    t_truong: Self::get_text(&x, "TTruong"),
+                    kd_lieu: Self::get_text(&x, "KDLieu"),
+                    d_lieu: Self::get_text(&x, "DLieu"),
+                })
+                .collect(),
+        };
+
+        Ok(ReadXmlDataResult {
+            nban:nban,
+            hhdvus: hhdvu_list,
+            ttoan: ttoan
+        })
     }
 
     async fn get_prefix_and_svid(&self) -> anyhow::Result<(Option<String>, Option<String>)> {
@@ -157,5 +282,13 @@ impl BachHoaXanhService {
         }
 
         Ok((urls[0].clone(), urls[1].clone(), urls[2].clone()))
+    }
+
+    fn get_text(node: &roxmltree::Node, tag: &str) -> String {
+        node.descendants()
+            .find(|n| n.tag_name().name() == tag)
+            .and_then(|n| n.text())
+            .unwrap_or("")
+            .to_string()
     }
 }

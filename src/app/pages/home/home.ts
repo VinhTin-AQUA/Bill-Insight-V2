@@ -30,7 +30,6 @@ export class Home {
             TauriCommandSerivce.GET_SHEET_STATS,
             {}
         );
-        console.log(r);
         
         if (r) {
             this.sheetStats.set(r);

@@ -30,7 +30,8 @@ pub fn run() {
             init_google_sheet_command,
             get_invoices,
             get_sheet_stats,
-            get_captcha_and_asp_session
+            get_captcha_and_asp_session,
+            get_xml_invoice_data
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
