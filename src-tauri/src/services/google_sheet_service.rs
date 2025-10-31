@@ -164,9 +164,7 @@ pub async fn set_invoices(items: Vec<InvoiceExcel>) -> Result<ResponseCommand, B
         "values": values
     });
 
-    println!("{:?}", body);
-
-    let write_resp = service.client
+    _ = service.client
         .post(&write_url) // ✅ POST + :append = append thêm dòng
         .bearer_auth(service.access_token.as_str())
         .json(&body)
@@ -175,10 +173,8 @@ pub async fn set_invoices(items: Vec<InvoiceExcel>) -> Result<ResponseCommand, B
         .json::<serde_json::Value>()
         .await?;
 
-    println!("✏️ Kết quả ghi:\n{:#?}", write_resp);
-    
     let response_command: ResponseCommand = ResponseCommand {
-        description: "Ghi dữ liệu thành công!".to_string(),
+        message: "Ghi dữ liệu thành công!".to_string(),
         title: "Success".to_string(),
         is_success: true
     };

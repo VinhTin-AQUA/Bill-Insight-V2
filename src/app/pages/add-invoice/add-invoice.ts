@@ -11,6 +11,8 @@ import { convertFileSrc } from '@tauri-apps/api/core';
 import { HHDVu, NBan, ReadXmlDataResult, TToan } from './models/xml_data';
 import { CashItem, InvoiceExcel } from './models/invoice-excel';
 import { formatDate } from '@angular/common';
+import { DialogService } from '../../shared/services/dialog-service';
+import { ResponseCommad } from '../../shared/models/response-command';
 
 @Component({
     selector: 'app-add-invoice',
@@ -46,7 +48,10 @@ export class AddInvoice {
         sv_id: '',
     });
 
-    constructor(private tauriCommandSerivce: TauriCommandSerivce) {}
+    constructor(
+        private tauriCommandSerivce: TauriCommandSerivce,
+        private dialogService: DialogService
+    ) {}
 
     ngOnInit() {}
 
@@ -125,12 +130,19 @@ export class AddInvoice {
 
         console.log(list);
 
-        const captcha_and_asp_session = await this.tauriCommandSerivce.invokeCommand<any>(
+        const responseCommad = await this.tauriCommandSerivce.invokeCommand<ResponseCommad>(
             TauriCommandSerivce.SET_INVOICES,
             { items: list }
         );
 
-        console.log(captcha_and_asp_session);
+        this.dialogService.updateNoticeDialogState(
+            true,
+            responseCommad?.is_success,
+            responseCommad?.message,
+            responseCommad?.title
+        );
+
+        console.log(responseCommad);
     }
 
     async loadCaptcha() {

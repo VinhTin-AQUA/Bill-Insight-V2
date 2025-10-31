@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
+import { DialogService } from '../dialog-service';
 
 @Injectable({
     providedIn: 'root',
@@ -12,12 +13,18 @@ export class TauriCommandSerivce {
     static readonly GET_XML_INVOICE_DATA = 'get_xml_invoice_data';
     static readonly SET_INVOICES = 'set_invoices';
 
+    constructor(private dialogService: DialogService) {}
+
     async invokeCommand<T>(cmd: string, params: any): Promise<T | null> {
+        this.dialogService.showLoadingDialog(true);
+
         try {
             const initOk = await invoke<T>(cmd, params);
+            this.dialogService.showLoadingDialog(false);
             return initOk;
         } catch (e) {
             alert(e);
+            this.dialogService.showLoadingDialog(false);
             return null;
         }
     }
