@@ -1,7 +1,7 @@
 use crate::helpers::parse_vietnamese_number;
-use crate::models::{InvoiceItem, ListInvoiceItems, SheetStats};
+use crate::models::{InvoiceExcel, InvoiceItem, ListInvoiceItems, ResponseCommand, SheetStats};
 use reqwest::Client;
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::OnceCell;
@@ -9,7 +9,7 @@ use yup_oauth2::{read_service_account_key, ServiceAccountAuthenticator};
 
 const SPREADSHEET_ID: &str = "1D4UeZBozLOjiIlhJ-YSuok-MqIJDCYicoI807K0tj1o"; // <-- Thay bằng ID sheet của bạn
 const SHEET_NAME: &str = "Sheet2"; // <-- Thay bằng tên sheet nếu khác
-const SHEET_PATH: &str = "/home/newtun/Desktop/Secrets/billinsight-0b2c14cec552.json";
+// const SHEET_PATH: &str = "/home/newtun/Desktop/Secrets/billinsight-0b2c14cec552.json";
 
 pub struct GoogleSheetsService {
     pub client: Client,
@@ -135,44 +135,60 @@ pub async fn get_sheet_stats() -> Result<SheetStats, Box<dyn std::error::Error>>
     Ok(stats)
 }
 
-async fn set_invoices() -> Result<(), Box<dyn std::error::Error>> {
-    // let service = GOOGLE_SHEETS_SERVICE
-    //     .get()
-    //     .expect("GOOGLE_SHEETS_SERVICE not initialized");
+pub async fn set_invoices(items: Vec<InvoiceExcel>) -> Result<ResponseCommand, Box<dyn std::error::Error>> {
+    let service = GOOGLE_SHEETS_SERVICE
+        .get()
+        .expect("GOOGLE_SHEETS_SERVICE not initialized");
 
     // ----------- 🟣 GHI DỮ LIỆU -----------
-    // let write_range = format!("{}!A:D", SHEET_NAME);
-    // let write_url = format!(
-    //     "https://sheets.googleapis.com/v4/spreadsheets/{}/values/{}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS",
-    //     SPREADSHEET_ID, write_range
-    // );
-    //
-    // let body = json!({
-    // "majorDimension": "ROWS",
-    //     "values": [
-    //         ["22/10/2025", "ABCC", 453534, 234432],
-    //         ["22/10/2025", "ABCC", 453534, 234432],
-    //         ["22/10/2025", "ABCC", 453534, 234432],
-    //     ]
-    // });
-    //
-    // let write_resp = client
-    //     .post(&write_url) // ✅ POST + :append = append thêm dòng
-    //     .bearer_auth(access_token)
-    //     .json(&body)
-    //     .send()
-    //     .await?
-    //     .json::<serde_json::Value>()
-    //     .await?;
-    //
-    // println!("✏️ Kết quả ghi:\n{:#?}", write_resp);
+    let write_range = format!("{}!A:D", SHEET_NAME);
+    let write_url = format!(
+        "https://sheets.googleapis.com/v4/spreadsheets/{}/values/{}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS",
+        SPREADSHEET_ID, write_range
+    );
 
-    Ok(())
+    let values: Vec<Vec<serde_json::Value>> = items
+        .iter()
+        .map(|i| {
+            vec![
+                json!(i.invoice_date),
+                json!(i.name),
+                json!(i.cash),
+                json!(i.bank),
+            ]
+        })
+        .collect();
+
+    let body = json!({
+    "majorDimension": "ROWS",
+        "values": values
+    });
+
+    println!("{:?}", body);
+
+    let write_resp = service.client
+        .post(&write_url) // ✅ POST + :append = append thêm dòng
+        .bearer_auth(service.access_token.as_str())
+        .json(&body)
+        .send()
+        .await?
+        .json::<serde_json::Value>()
+        .await?;
+
+    println!("✏️ Kết quả ghi:\n{:#?}", write_resp);
+    
+    let response_command: ResponseCommand = ResponseCommand {
+        description: "Ghi dữ liệu thành công!".to_string(),
+        title: "Success".to_string(),
+        is_success: true
+    };
+
+    Ok(response_command)
 }
 
 /* private methods */
 
-pub fn group_by_date(value: &Value) -> Vec<ListInvoiceItems> {
+fn group_by_date(value: &Value) -> Vec<ListInvoiceItems> {
     let mut map: HashMap<String, Vec<InvoiceItem>> = HashMap::new();
     let mut current_date = String::new();
 

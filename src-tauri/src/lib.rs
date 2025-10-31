@@ -29,6 +29,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             init_google_sheet_command,
             get_invoices,
+            set_invoices,
             get_sheet_stats,
             get_captcha_and_asp_session,
             get_xml_invoice_data

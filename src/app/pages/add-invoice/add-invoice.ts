@@ -1,4 +1,4 @@
-import { DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -8,7 +8,9 @@ import { CaptchaSession } from './models/captcha-session';
 import { AppFolderHelper } from '../../shared/helpers/app-folder';
 import { EAppFolderNames } from '../../core/enums/folder-names';
 import { convertFileSrc } from '@tauri-apps/api/core';
-import { ReadXmlDataResult } from './models/xml_data';
+import { HHDVu, NBan, ReadXmlDataResult, TToan } from './models/xml_data';
+import { CashItem, InvoiceExcel } from './models/invoice-excel';
+import { formatDate } from '@angular/common';
 
 @Component({
     selector: 'app-add-invoice',
@@ -17,12 +19,22 @@ import { ReadXmlDataResult } from './models/xml_data';
     styleUrl: './add-invoice.scss',
 })
 export class AddInvoice {
-    seller = { mst: '3423542534', address: '123 Thong Nhat Street', phone: '98765432', other: '' };
     captchaInput = '';
     invoiceCode = '';
     invoiceCT = '';
-    invoiceItems = [{ name: '', price: 0 }];
-    extraItems = [{ name: '', price: 0 }];
+
+    hhdvus = signal<HHDVu[]>([]);
+    nban = signal<NBan>({ d_chi: '', mst: '', sdt: '', ten: '', tt_khac: [] });
+    ttoan = signal<TToan>({
+        t_httl_t_suat: [],
+        tg_t_thue: 0,
+        tg_tc_thue: 0,
+        tg_tt_tb_chu: '',
+        tg_tt_tb_so: 0,
+        tt_khac: [],
+    });
+
+    cashItems = signal<CashItem[]>([]);
     invoiceDate = new Date().toISOString().substring(0, 10);
 
     faArrowsRotate = faArrowsRotate;
@@ -36,52 +48,89 @@ export class AddInvoice {
 
     constructor(private tauriCommandSerivce: TauriCommandSerivce) {}
 
-    get totalBeforeTax() {
-        return [...this.invoiceItems, ...this.extraItems].reduce(
-            (a, b) => a + (Number(b.price) || 0),
-            0
-        );
-    }
-
-    get tax() {
-        return this.totalBeforeTax * 0.1; // giả sử VAT 10%
-    }
-
-    get totalAfterTax() {
-        return this.totalBeforeTax + this.tax;
-    }
-
-    get totalInWords() {
-        return this.numberToWords(this.totalAfterTax);
-    }
-
     ngOnInit() {}
 
     addInvoiceItem() {
-        this.invoiceItems.push({ name: '', price: 0 });
+        this.hhdvus.update((group) => [
+            ...group,
+            {
+                cash: '',
+                d_gia: 0,
+                dv_tinh: '',
+                id: crypto.randomUUID(),
+                mhhdvu: '',
+                s_luong: 0,
+                t_suat: '',
+                th_tien: 0,
+                th_tien_sau_lai_suat: 0,
+                thhdvu: '',
+            },
+        ]);
     }
 
-    removeInvoiceItem(index: number) {
-        this.invoiceItems.splice(index, 1);
+    removeInvoiceItem(id: string) {
+        const index = this.hhdvus().findIndex((item) => item.id === id);
+        if (index !== -1) {
+            const hhdvus = [...this.hhdvus()];
+            hhdvus.splice(index, 1);
+            this.hhdvus.set(hhdvus);
+        }
     }
 
     addExtraItem() {
-        this.extraItems.push({ name: '', price: 0 });
+        this.cashItems.update((x) => [
+            ...x,
+            {
+                cash: 0,
+                id: crypto.randomUUID(),
+                name: '',
+            },
+        ]);
     }
 
-    removeExtraItem(index: number) {
-        this.extraItems.splice(index, 1);
+    removeExtraItem(id: string) {
+        const index = this.cashItems().findIndex((item) => item.id === id);
+        if (index !== -1) {
+            const cashItems = [...this.cashItems()];
+            cashItems.splice(index, 1);
+            this.cashItems.set(cashItems);
+        }
     }
 
-    saveInvoice() {
-        console.log({
-            seller: this.seller,
-            invoiceItems: this.invoiceItems,
-            extraItems: this.extraItems,
-            total: this.totalAfterTax,
-            date: this.invoiceDate,
-        });
-        alert('Hóa đơn đã được lưu!');
+    async saveInvoice() {
+        const formattedDate = formatDate(this.invoiceDate, 'dd/MM/yyyy', 'en-US');
+
+        const list1 = this.hhdvus().map((x: HHDVu) => ({
+            bank: x.th_tien_sau_lai_suat,
+            cash: 0,
+            invoice_date: formattedDate,
+            name: x.thhdvu,
+        }));
+
+        const list2 = this.cashItems().map((x: CashItem) => ({
+            bank: 0,
+            cash: x.cash,
+            invoice_date: formattedDate,
+            name: x.name,
+        }));
+
+        // Gộp lại
+        let list = [...list1, ...list2];
+
+        // Chỉ giữ ngày thật ở phần tử đầu tiên, còn lại thay bằng "-"
+        list = list.map((item, index) => ({
+            ...item,
+            invoice_date: index === 0 ? formattedDate : '-',
+        }));
+
+        console.log(list);
+
+        const captcha_and_asp_session = await this.tauriCommandSerivce.invokeCommand<any>(
+            TauriCommandSerivce.SET_INVOICES,
+            { items: list }
+        );
+
+        console.log(captcha_and_asp_session);
     }
 
     async loadCaptcha() {
@@ -117,11 +166,26 @@ export class AddInvoice {
             }
         );
 
+        if (!xml_data) {
+            return;
+        }
+
+        this.hhdvus.set(xml_data.hhdvus);
+        this.nban.set(xml_data.nban);
+        this.ttoan.set(xml_data.ttoan);
+
         console.log(xml_data);
     }
 
-    private numberToWords(num: number): string {
-        // đơn giản hóa — bạn có thể thay bằng thư viện đọc số thành chữ tiếng Việt
-        return `${num.toLocaleString()} đồng`;
+    onCashInput(event: Event, item: CashItem) {
+        const input = event.target as HTMLInputElement;
+        input.value = input.value.replace(/[^0-9]/g, '');
+        item.cash = +input.value;
+    }
+
+    onInvoiceInput(event: Event, item: HHDVu) {
+        const input = event.target as HTMLInputElement;
+        input.value = input.value.replace(/[^0-9]/g, '');
+        item.th_tien_sau_lai_suat = +input.value;
     }
 }

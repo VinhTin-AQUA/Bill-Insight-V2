@@ -10,6 +10,7 @@ export class TauriCommandSerivce {
     static readonly GET_SHEET_STATS = 'get_sheet_stats';
     static readonly GET_CAPTCHA_AND_ASP_SESSION = 'get_captcha_and_asp_session';
     static readonly GET_XML_INVOICE_DATA = 'get_xml_invoice_data';
+    static readonly SET_INVOICES = 'set_invoices';
 
     async invokeCommand<T>(cmd: string, params: any): Promise<T | null> {
         try {

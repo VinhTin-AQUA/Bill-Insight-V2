@@ -34,9 +34,9 @@ body {
 }
 
 .btn-success {
-    @apply px-3 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition;
+    @apply px-3 py-2 cursor-pointer text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition;
 }
 
 .btn-danger {
-    @apply px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition;
+    @apply px-3 py-2 cursor-pointer text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition;
 }

@@ -1,4 +1,4 @@
-use crate::models::{InvoiceItem, ListInvoiceItems, SheetStats};
+use crate::models::{InvoiceExcel, ListInvoiceItems, ResponseCommand, SheetStats};
 use crate::services::google_sheet_service;
 use tauri::command;
 
@@ -18,6 +18,14 @@ pub async fn get_invoices() -> Result<Vec<ListInvoiceItems>, String> {
 #[command]
 pub async fn get_sheet_stats() -> Result<SheetStats, String> {
     let r = google_sheet_service::get_sheet_stats()
+        .await
+        .map_err(|e| e.to_string());
+    r
+}
+
+#[command]
+pub async fn set_invoices(items: Vec<InvoiceExcel>) -> Result<ResponseCommand, String> {
+    let r = google_sheet_service::set_invoices(items)
         .await
         .map_err(|e| e.to_string());
     r

@@ -44,44 +44,61 @@
 
     <!-- Người bán -->
     <div class="bg-white shadow-md rounded-2xl p-2 border border-gray-100">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between my-2">
             <h2 class="text-xl font-semibold text-green-800 flex items-center gap-2">
-                <i class="fa-solid fa-store text-blue-500"></i>
+                <i class="fa-solid fa-store"></i>
                 Người bán
             </h2>
         </div>
 
-        <div class="grid grid-cols-1 gap-4">
+        <div class="grid grid-cols-1 gap-1">
+            <!-- ten -->
+            <div class="">
+                <p class="font-semibold text-gray-800 bg-gray-50 rounded-lg px-2">
+                    <span class="font-medium text-gray-600 mb-1">Điện thoại: </span>{{ nban().ten }}
+                </p>
+            </div>
+
             <!-- Mã số thuế -->
             <div class="">
                 <p class="font-semibold text-gray-800 bg-gray-50 rounded-lg px-2">
                     <span class="font-medium text-gray-600 mb-1">Mã số thuế: </span>
-                    {{ seller.mst }}
+                    {{ nban().mst }}
                 </p>
             </div>
 
             <!-- Địa chỉ -->
             <div class="">
                 <p class="font-semibold text-gray-800 bg-gray-50 rounded-lg px-2">
-                    <span class="font-medium text-gray-600 mb-1">Địa chỉ: </span
-                    >{{ seller.address }}
+                    <span class="font-medium text-gray-600 mb-1">Địa chỉ: </span>{{ nban().d_chi }}
                 </p>
             </div>
 
             <!-- Điện thoại -->
             <div class="">
                 <p class="font-semibold text-gray-800 bg-gray-50 rounded-lg px-2">
-                    <span class="font-medium text-gray-600 mb-1">Điện thoại: </span
-                    >{{ seller.phone }}
+                    <span class="font-medium text-gray-600 mb-1">Điện thoại: </span>{{ nban().sdt }}
                 </p>
             </div>
 
-            <!-- Thông tin khác -->
+            <hr class="border-gray-200" />
+        </div>
+
+        <div class="flex items-center justify-between my-2">
+            <h2 class="text-xl font-semibold text-green-800 flex items-center gap-2">
+                <i class="fa-solid fa-store"></i>
+                Chi nhánh
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-1 gap-1">
             <div class="">
+                @for (tt_khac of nban().tt_khac; track $index) {
                 <p class="font-semibold text-gray-800 bg-gray-50 rounded-lg px-2">
-                    <label class="font-medium text-gray-600">Thông tin khác: </label>
-                    {{ seller.other }}
+                    <label class="font-medium text-gray-600">{{ tt_khac.t_truong }}: </label>
+                    {{ tt_khac.d_lieu }}
                 </p>
+                }
             </div>
         </div>
     </div>
@@ -99,24 +116,27 @@
 
         <!-- Danh sách item -->
         <div class="space-y-3 mb-2">
-            @for (item of invoiceItems; track $index) {
+            @for (item of hhdvus(); track $index) {
             <div
                 class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-gray-50 rounded-xl shadow-sm border border-gray-200 transition hover:shadow-md"
             >
                 <input
                     type="text"
-                    [(ngModel)]="item.name"
+                    [(ngModel)]="item.thhdvu"
                     placeholder="Tên hàng"
                     class="input w-full flex-1"
                 />
                 <div class="grid grid-cols-3 gap-2 w-full">
                     <input
                         type="number"
-                        [(ngModel)]="item.price"
-                        placeholder="Giá"
+                        [(ngModel)]="item.th_tien_sau_lai_suat"
                         class="input w-full col-span-2"
+                        inputmode="decimal"
+                        pattern="[0-9]*"
+                        placeholder="Giá"
+                        (input)="onInvoiceInput($event, item)"
                     />
-                    <button (click)="removeInvoiceItem($index)" class="btn-danger w-full">
+                    <button (click)="removeInvoiceItem(item.id)" class="btn-danger w-full">
                         <fa-icon [icon]="faTrash" />
                     </button>
                 </div>
@@ -141,7 +161,7 @@
         </div>
 
         <div class="space-y-3 mb-2">
-            @for (item of extraItems; track $index) {
+            @for (item of cashItems(); track $index) {
             <div
                 class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-gray-50 rounded-xl shadow-sm border border-gray-200 transition hover:shadow-md"
             >
@@ -153,13 +173,16 @@
                 />
                 <div class="grid grid-cols-3 gap-2 w-full">
                     <input
-                        type="number"
-                        [(ngModel)]="item.price"
+                        type="text"
+                        inputmode="decimal"
+                        pattern="[0-9]*"
+                        [(ngModel)]="item.cash"
                         placeholder="Giá"
                         class="input w-full col-span-2"
+                        (input)="onCashInput($event, item)"
                     />
                     <button
-                        (click)="removeExtraItem($index)"
+                        (click)="removeExtraItem(item.id)"
                         class="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition"
                     >
                         <i class="fa-solid fa-trash"></i> Xóa
@@ -185,32 +208,28 @@
                     <i class="fa-regular fa-calendar text-blue-500"></i>
                     Ngày hóa đơn
                 </label>
-                <input
-                    type="date"
-                    [(ngModel)]="invoiceDate"
-                    class="input w-full"
-                />
+                <input type="date" [(ngModel)]="invoiceDate" class="input w-full" />
             </div>
 
             <!-- Tổng cộng -->
             <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 shadow-sm">
                 <div class="flex justify-between text-sm text-gray-700 mb-2">
                     <span>Tổng cộng (chưa thuế):</span>
-                    <span class="font-medium">{{ totalBeforeTax | number }}</span>
+                    <span class="font-medium">{{ ttoan().tg_tc_thue | number }}</span>
                 </div>
                 <div class="flex justify-between text-sm text-gray-700 mb-2">
                     <span>Thuế (VAT):</span>
-                    <span class="font-medium">{{ tax | number }}</span>
+                    <span class="font-medium">{{ ttoan().tg_t_thue | number }}</span>
                 </div>
                 <div
                     class="flex justify-between font-semibold text-lg text-gray-900 border-t border-gray-200 pt-2"
                 >
                     <span>Tổng thanh toán:</span>
-                    <span class="text-green-600">{{ totalAfterTax | number }}</span>
+                    <span class="text-green-600">{{ ttoan().tg_tt_tb_so | number }}</span>
                 </div>
                 <div class="text-sm italic text-gray-500 mt-2">
                     <i class="fa-solid fa-quote-left text-gray-400 mr-1"></i>
-                    Bằng chữ: {{ totalInWords }}
+                    Bằng chữ: {{ ttoan().tg_tt_tb_chu }}
                 </div>
             </div>
         </div>

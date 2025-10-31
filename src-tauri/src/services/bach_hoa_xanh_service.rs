@@ -82,22 +82,24 @@ impl BachHoaXanhService {
         invoice_num: &str,
         folder: &str
     ) -> anyhow::Result<Option<ReadXmlDataResult>> {
-        let url = format!("{}/Home/ListInvoice", self.api_url);
-        let body = format!("phone={}&invoiceNum={}&captcha={}", phone, invoice_num, captcha);
+        // let url = format!("{}/Home/ListInvoice", self.api_url);
+        // let body = format!("phone={}&invoiceNum={}&captcha={}", phone, invoice_num, captcha);
+        //
+        // let resp = self.client.post(&url)
+        //     .header("cookie", format!("SvID={}; ASP.NET_SessionId={}", sv_id, asp_session))
+        //     .header("x-requested-with", "XMLHttpRequest")
+        //     .header("content-type", "application/x-www-form-urlencoded; charset=UTF-8")
+        //     .body(body)
+        //     .send()
+        //     .await?
+        //     .text()
+        //     .await?;
+        //
+        // // url_xem, url_tai_hdchuyen_doi, url_tai_xml
+        // let (_, _, url_tai_xml) = Self::get_urls(&resp)?;
+        // let xml_path = Self::download_xml_file(&self, url_tai_xml.as_str(), folder).await?;
 
-        let resp = self.client.post(&url)
-            .header("cookie", format!("SvID={}; ASP.NET_SessionId={}", sv_id, asp_session))
-            .header("x-requested-with", "XMLHttpRequest")
-            .header("content-type", "application/x-www-form-urlencoded; charset=UTF-8")
-            .body(body)
-            .send()
-            .await?
-            .text()
-            .await?;
-
-        // url_xem, url_tai_hdchuyen_doi, url_tai_xml
-        let (_, _, url_tai_xml) = Self::get_urls(&resp)?;
-        let xml_path = Self::download_xml_file(&self, url_tai_xml.as_str(), folder).await?;
+        let xml_path  = "/home/newtun/.local/share/com.newtun.billinsight/Temps/de306117-9a96-47aa-9352-00a8a0399241.xml".to_string();
         let read_xml_result = Self::parse_xml_data(&self, xml_path.as_str()).await?;
         Ok(Some(read_xml_result))
     }
