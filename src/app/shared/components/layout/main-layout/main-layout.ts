@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NavItem } from './models/nav-item';
+import { filter } from 'rxjs';
 
 @Component({
     selector: 'app-main-layout',
@@ -13,7 +14,7 @@ export class MainLayout {
 
     navItems: NavItem[] = [];
 
-    constructor() {}
+    constructor(private router: Router) {}
 
     ngOnInit() {
         this.navItems = [
@@ -38,6 +39,13 @@ export class MainLayout {
                 url: '/settings',
             },
         ];
+
+        // 👇 Lắng nghe sự kiện điều hướng xong thì đóng drawer
+        this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+            if (this.isDrawerOpen) {
+                this.toggleDrawer();
+            }
+        });
     }
 
     toggleDrawer() {
