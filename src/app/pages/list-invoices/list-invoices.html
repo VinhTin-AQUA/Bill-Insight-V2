@@ -1,34 +1,59 @@
-<div class="p-4 space-y-6 bg-gray-50 min-h-screen">
+<div class="p-6 bg-gray-50 min-h-screen space-y-6">
     @for (group of productGroups(); track $index) {
-    <div class="bg-white rounded-2xl shadow-sm p-4">
-        <!-- Ngày -->
-        <h2 class="text-lg font-semibold text-gray-800 mb-3 flex items-center justify-between">
-            <span>{{ group.date }}</span>
-            <span class="text-sm text-gray-400">{{ group.items.length }} sản phẩm</span>
-        </h2>
+    <div
+        class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200"
+    >
+        <!-- Header nhóm -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Đã chốt"></div>
+                <h2 class="text-base font-semibold text-gray-800">
+                    {{ group.date }}
+                </h2>
+            </div>
+            <span class="text-sm text-gray-500 font-medium">
+                {{ group.items.length }} sản phẩm
+            </span>
+        </div>
 
         <!-- Danh sách sản phẩm -->
-        <div class="divide-y divide-gray-100">
+        <div class="max-h-[400px] overflow-y-auto px-5 py-3 divide-y divide-gray-100">
             @for (product of group.items; track $index) {
-            <div class="py-3 flex justify-between items-center">
+            <div
+                class="py-3 flex justify-between items-start hover:bg-gray-50 rounded-xl transition-colors px-2"
+            >
                 <div>
                     <p class="font-medium text-gray-800">{{ product.name }}</p>
-                    <p class="text-sm text-gray-800">Tiền mặt: {{ product.cash_price | number}}₫</p>
-                    <p class="text-sm text-gray-800">Ngân hàng: {{ product.bank_price | number }}₫</p>
+                    <div class="text-sm text-gray-600 mt-1 space-y-0.5">
+                        <p>
+                            💵 Tiền mặt:
+                            <span class="font-medium text-gray-800"
+                                >{{ product.cash_price | number }}₫</span
+                            >
+                        </p>
+                        <p>
+                            🏦 Ngân hàng:
+                            <span class="font-medium text-gray-800"
+                                >{{ product.bank_price | number }}₫</span
+                            >
+                        </p>
+                    </div>
                 </div>
             </div>
             }
         </div>
 
-        <!-- Tổng tiền -->
-        <div class="mt-4 p-3 bg-blue-50 rounded-xl text-sm flex justify-between text-gray-700">
+        <!-- Tổng kết -->
+        <div
+            class="flex justify-between items-center px-5 py-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-b-2xl text-sm text-gray-700"
+        >
             <div>
-                <p class="font-semibold text-blue-600">Tổng tiền mặt</p>
-                <p>{{ getTotalCash(group.items) | number }}₫</p>
+                <p class="font-semibold text-green-700">Tổng tiền mặt</p>
+                <p class="text-gray-800">{{ getTotalCash(group.items) | number }}₫</p>
             </div>
             <div>
-                <p class="font-semibold text-blue-600">Tổng ngân hàng</p>
-                <p>{{ getTotalBank(group.items) | number }}₫</p>
+                <p class="font-semibold text-blue-700">Tổng ngân hàng</p>
+                <p class="text-gray-800">{{ getTotalBank(group.items) | number }}₫</p>
             </div>
         </div>
     </div>
