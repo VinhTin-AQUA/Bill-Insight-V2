@@ -33,3 +33,4 @@ uuid = { version = "1", features = ["v4"] }
 anyhow = "1"
 reqwest_cookie_store = "0.9.0"
 roxmltree = "0.19"
+urlencoding = "2"

@@ -24,7 +24,6 @@ export class TauriCommandSerivce {
             this.dialogService.showLoadingDialog(false);
             return initOk;
         } catch (e) {
-            console.log(e);
             alert(e);
             this.dialogService.showLoadingDialog(false);
             return null;

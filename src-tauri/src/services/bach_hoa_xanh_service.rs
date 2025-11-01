@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
+use anyhow::anyhow;
 use reqwest::{Client};
 use reqwest_cookie_store::{CookieStoreMutex, CookieStore};
 use regex::Regex;
@@ -33,12 +34,11 @@ impl BachHoaXanhService {
     pub async fn get_captcha_and_asp_session(&self, folder: String) -> anyhow::Result<Option<CookieModel>> {
         let (sv_id, prefix) = self.get_prefix_and_svid().await?;
         if sv_id.is_none() || prefix.is_none() {
-            return Ok(None);
+            return Err(anyhow!("Vui lòng đợi và thử lại trong vài giây"));
         }
 
         let sv_id = sv_id.unwrap();
         let prefix = prefix.unwrap();
-
         let url = format!("{}/home/getcaptchaimage?prefix={}", self.api_url, prefix);
         let bytes = self.client.get(&url)
             .header("cookie", format!("SvID={}", sv_id))
@@ -49,7 +49,6 @@ impl BachHoaXanhService {
 
         let base = Path::new(folder.as_str());
         let captcha_path = base.join(format!("{}.jpeg", uuid::Uuid::new_v4()));
-
         let mut file = tokio::fs::File::create(&captcha_path).await?;
         file.write_all(&bytes).await?;
 
@@ -66,11 +65,12 @@ impl BachHoaXanhService {
                 .unwrap_or_default()
         };
 
-        Ok(Some(CookieModel {
+        let cookie:CookieModel = CookieModel {
             sv_id,
             aspnet_session_id: asp_session,
             captcha_path: captcha_path.display().to_string(),
-        }))
+        };
+        Ok(Some(cookie))
     }
 
     pub async fn get_xml_invoice_data(
@@ -82,24 +82,24 @@ impl BachHoaXanhService {
         invoice_num: &str,
         folder: &str
     ) -> anyhow::Result<Option<ReadXmlDataResult>> {
-        // let url = format!("{}/Home/ListInvoice", self.api_url);
-        // let body = format!("phone={}&invoiceNum={}&captcha={}", phone, invoice_num, captcha);
-        //
-        // let resp = self.client.post(&url)
-        //     .header("cookie", format!("SvID={}; ASP.NET_SessionId={}", sv_id, asp_session))
-        //     .header("x-requested-with", "XMLHttpRequest")
-        //     .header("content-type", "application/x-www-form-urlencoded; charset=UTF-8")
-        //     .body(body)
-        //     .send()
-        //     .await?
-        //     .text()
-        //     .await?;
-        //
-        // // url_xem, url_tai_hdchuyen_doi, url_tai_xml
-        // let (_, _, url_tai_xml) = Self::get_urls(&resp)?;
-        // let xml_path = Self::download_xml_file(&self, url_tai_xml.as_str(), folder).await?;
+        let url = format!("{}/Home/ListInvoice", self.api_url);
+        let body = format!("phone={}&invoiceNum={}&captcha={}", phone, invoice_num, captcha);
 
-        let xml_path  = "/home/newtun/.local/share/com.newtun.billinsight/Temps/de306117-9a96-47aa-9352-00a8a0399241.xml".to_string();
+        let resp = self.client.post(&url)
+            .header("cookie", format!("SvID={}; ASP.NET_SessionId={}", sv_id, asp_session))
+            .header("x-requested-with", "XMLHttpRequest")
+            .header("content-type", "application/x-www-form-urlencoded; charset=UTF-8")
+            .body(body)
+            .send()
+            .await?
+            .text()
+            .await?;
+
+        // url_xem, url_tai_hdchuyen_doi, url_tai_xml
+        let (_, _, url_tai_xml) = Self::get_urls(&resp)?;
+        let xml_path = Self::download_xml_file(&self, url_tai_xml.as_str(), folder).await?;
+
+        // let xml_path  = "/home/newtun/.local/share/com.newtun.billinsight/Temps/de306117-9a96-47aa-9352-00a8a0399241.xml".to_string();
         let read_xml_result = Self::parse_xml_data(&self, xml_path.as_str()).await?;
         Ok(Some(read_xml_result))
     }

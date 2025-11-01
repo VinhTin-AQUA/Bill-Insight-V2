@@ -9,24 +9,24 @@ pub async fn init_google_sheet_command(json_path: String) -> bool {
 }
 
 #[command]
-pub async fn get_invoices() -> Result<Vec<ListInvoiceItems>, String> {
-    let r = google_sheet_service::get_invoices()
+pub async fn get_invoices(sheet_name: String, spreadsheet_id: String) -> Result<Vec<ListInvoiceItems>, String> {
+    let r = google_sheet_service::get_invoices(sheet_name, spreadsheet_id)
         .await
         .map_err(|e| e.to_string());
     r
 }
 
 #[command]
-pub async fn get_sheet_stats() -> Result<SheetStats, String> {
-    let r = google_sheet_service::get_sheet_stats()
+pub async fn get_sheet_stats(sheet_name: String, spreadsheet_id: String) -> Result<SheetStats, String> {
+    let r = google_sheet_service::get_sheet_stats(sheet_name, spreadsheet_id)
         .await
         .map_err(|e| e.to_string());
     r
 }
 
 #[command]
-pub async fn set_invoices(items: Vec<InvoiceExcel>) -> Result<ResponseCommand, String> {
-    let r = google_sheet_service::set_invoices(items)
+pub async fn set_invoices(sheet_name: String, spreadsheet_id: String, items: Vec<InvoiceExcel>) -> Result<ResponseCommand, String> {
+    let r = google_sheet_service::set_invoices(sheet_name, spreadsheet_id, items)
         .await
         .map_err(|e| e.to_string());
     r

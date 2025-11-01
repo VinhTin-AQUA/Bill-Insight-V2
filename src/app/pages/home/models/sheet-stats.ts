@@ -1,9 +1,9 @@
 export interface SheetStats {
-    used_cash: String,
-    used_bank: String,
-    total_cash: String,
-    total_bank: String,
-    remaining_cash: String,
-    remaining_bank: String,
-    total_remaining: String,
+    used_cash: number,
+    used_bank: number,
+    total_cash: number,
+    total_bank: number,
+    remaining_cash: number,
+    remaining_bank: number,
+    total_remaining: number,
 }

@@ -44,8 +44,6 @@ export class SpreadsheetConfigService {
             credentialFolder,
             EConfigFileNames.GOOGLE_CREDENTIAL_FILE_NAME
         );
-        console.log(credentialPath);
-
         await remove(credentialPath);
     }
 }

@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { InvoiceItem, ListInvoiceItems } from './models/invoice-item';
 import { DecimalPipe } from '@angular/common';
 import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
+import { SpreadsheetConfigStore } from '../../shared/stores/config-store';
 
 @Component({
     selector: 'app-list-invoices',
@@ -11,6 +12,7 @@ import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-s
 })
 export class ListInvoices {
     productGroups = signal<ListInvoiceItems[]>([]);
+    spreadsheetConfigStore = inject(SpreadsheetConfigStore);
 
     constructor(private tauriCommandSerivce: TauriCommandSerivce) {}
 
@@ -21,7 +23,10 @@ export class ListInvoices {
     async getInvoices() {
         const r = await this.tauriCommandSerivce.invokeCommand<ListInvoiceItems[]>(
             TauriCommandSerivce.GET_INVOICES,
-            {}
+            {
+                sheetName: this.spreadsheetConfigStore.workingSheet().title,
+                spreadsheetId: this.spreadsheetConfigStore.spreadSheetId(),
+            }
         );
 
         if (r) {

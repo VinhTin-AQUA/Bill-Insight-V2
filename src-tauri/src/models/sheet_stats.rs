@@ -2,13 +2,13 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SheetStats {
-    pub used_cash: String,
-    pub used_bank: String,
-    pub total_cash: String,
-    pub total_bank: String,
-    pub remaining_cash: String,
-    pub remaining_bank: String,
-    pub total_remaining: String,
+    pub used_cash: f32,
+    pub used_bank: f32,
+    pub total_cash: f32,
+    pub total_bank: f32,
+    pub remaining_cash: f32,
+    pub remaining_bank: f32,
+    pub total_remaining: f32,
 }
 
 #[derive(Deserialize, Debug)]

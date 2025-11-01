@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faArrowsRotate, faTrash, faCirclePlus } from '@fortawesome/free-solid-svg-icons';
@@ -13,6 +13,8 @@ import { CashItem, InvoiceExcel } from './models/invoice-excel';
 import { formatDate } from '@angular/common';
 import { DialogService } from '../../shared/services/dialog-service';
 import { ResponseCommad } from '../../shared/models/response-command';
+import { SpreadsheetConfigStore } from '../../shared/stores/config-store';
+import { FileHelper } from '../../shared/helpers/file-helper';
 
 @Component({
     selector: 'app-add-invoice',
@@ -38,6 +40,7 @@ export class AddInvoice {
 
     cashItems = signal<CashItem[]>([]);
     invoiceDate = new Date().toISOString().substring(0, 10);
+    spreadsheetConfigStore = inject(SpreadsheetConfigStore);
 
     faArrowsRotate = faArrowsRotate;
     faTrash = faTrash;
@@ -104,7 +107,6 @@ export class AddInvoice {
 
     async saveInvoice() {
         const formattedDate = formatDate(this.invoiceDate, 'dd/MM/yyyy', 'en-US');
-
         const list1 = this.hhdvus().map((x: HHDVu) => ({
             bank: x.th_tien_sau_lai_suat,
             cash: 0,
@@ -119,20 +121,19 @@ export class AddInvoice {
             name: x.name,
         }));
 
-        // Gộp lại
         let list = [...list1, ...list2];
-
-        // Chỉ giữ ngày thật ở phần tử đầu tiên, còn lại thay bằng "-"
         list = list.map((item, index) => ({
             ...item,
             invoice_date: index === 0 ? formattedDate : '-',
         }));
 
-        console.log(list);
-
         const responseCommad = await this.tauriCommandSerivce.invokeCommand<ResponseCommad>(
             TauriCommandSerivce.SET_INVOICES,
-            { items: list }
+            {
+                sheetName: this.spreadsheetConfigStore.workingSheet().title,
+                spreadsheetId: this.spreadsheetConfigStore.spreadSheetId(),
+                items: list,
+            }
         );
 
         this.dialogService.updateNoticeDialogState(
@@ -142,7 +143,8 @@ export class AddInvoice {
             responseCommad?.title
         );
 
-        console.log(responseCommad);
+        const tempFolder = await AppFolderHelper.getFolderPath(EAppFolderNames.TempDir);
+        await FileHelper.clearAllFilesInFolder(tempFolder)
     }
 
     async loadCaptcha() {
@@ -185,8 +187,6 @@ export class AddInvoice {
         this.hhdvus.set(xml_data.hhdvus);
         this.nban.set(xml_data.nban);
         this.ttoan.set(xml_data.ttoan);
-
-        console.log(xml_data);
     }
 
     onCashInput(event: Event, item: CashItem) {

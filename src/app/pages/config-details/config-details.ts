@@ -21,6 +21,7 @@ import { RouteNavigationHelper } from '../../shared/helpers/route-navigation-hel
 import { FileHelper } from '../../shared/helpers/file-helper';
 import { SpreadsheetConfigStore } from '../../shared/stores/config-store';
 import { SheetInfo } from './models/sheet-info';
+import { DialogService } from '../../shared/services/dialog-service';
 
 @Component({
     selector: 'app-config-details',
@@ -43,7 +44,8 @@ export class ConfigDetails {
         private fb: FormBuilder,
         private spreadsheetConfigService: SpreadsheetConfigService,
         private tauriCommandSerivce: TauriCommandSerivce,
-        private router: Router
+        private router: Router,
+        private dialogService: DialogService
     ) {}
 
     ngOnInit() {
@@ -55,7 +57,7 @@ export class ConfigDetails {
         }
     }
 
-    ngOnViewInit() {
+    ngAfterViewInit() {
         this.updateForm();
     }
 
@@ -76,31 +78,37 @@ export class ConfigDetails {
     }
 
     async saveConfig() {
-        this.submitted = true;
-        if (!this.configForm.valid) {
-            return;
+        try {
+            this.submitted = true;
+            if (!this.configForm.valid) {
+                return;
+            }
+
+            if (this.selectedFile) {
+                await this.spreadsheetConfigService.removeCredentialFilee();
+                await this.spreadsheetConfigService.saveCredentialFile(this.selectedFile);
+            }
+
+            const configModel: SpreadsheetConfigModel = {
+                spreadSheetId: this.configForm.controls['spreadSheetId'].value,
+                spreadSheetUrl: this.configForm.controls['spreadSheetUrl'].value,
+                workingSheet: {
+                    id: this.spreadsheetConfigStore.workingSheet().id,
+                    isActive: true,
+                    title: this.spreadsheetConfigStore.workingSheet().title,
+                },
+            };
+            await this.spreadsheetConfigService.saveConfig(configModel);
+            await this.init();
+            this.dialogService.updateNoticeDialogState(
+                true,
+                true,
+                'Cập nhật thành công',
+                'Success'
+            );
+        } catch (e) {
+            this.dialogService.updateNoticeDialogState(true, false, JSON.stringify(e), 'Failed');
         }
-
-        console.log(this.configForm.value);
-
-        console.log(this.selectedFile);
-
-        if (this.selectedFile) {
-            await this.spreadsheetConfigService.removeCredentialFilee();
-            await this.spreadsheetConfigService.saveCredentialFile(this.selectedFile);
-        }
-
-        const configModel: SpreadsheetConfigModel = {
-            spreadSheetId: this.configForm.controls['spreadSheetId'].value,
-            spreadSheetUrl: this.configForm.controls['spreadSheetUrl'].value,
-            workingSheet: {
-                id: -1,
-                isActive: false,
-                title: '',
-            },
-        };
-        await this.spreadsheetConfigService.saveConfig(configModel);
-        await this.init();
     }
 
     addSheet() {
@@ -108,17 +116,28 @@ export class ConfigDetails {
     }
 
     async saveWorkingSheet() {
-        const configModel: SpreadsheetConfigModel = {
-            spreadSheetId: this.spreadsheetConfigStore.spreadSheetId(),
-            spreadSheetUrl: this.spreadsheetConfigStore.spreadSheetUrl(),
-            workingSheet: {
-                id: this.spreadsheetConfigStore.workingSheet().id,
-                isActive: true,
-                title: this.spreadsheetConfigStore.workingSheet().title,
-            },
-        };
+        try {
+            const configModel: SpreadsheetConfigModel = {
+                spreadSheetId: this.spreadsheetConfigStore.spreadSheetId(),
+                spreadSheetUrl: this.spreadsheetConfigStore.spreadSheetUrl(),
+                workingSheet: {
+                    id: this.spreadsheetConfigStore.workingSheet().id,
+                    isActive: true,
+                    title: this.spreadsheetConfigStore.workingSheet().title,
+                },
+            };
 
-        await this.spreadsheetConfigService.saveConfig(configModel);
+            await this.spreadsheetConfigService.saveConfig(configModel);
+
+            this.dialogService.updateNoticeDialogState(
+                true,
+                true,
+                'Cập nhật thành công',
+                'Success'
+            );
+        } catch (e) {
+            this.dialogService.updateNoticeDialogState(true, false, JSON.stringify(e), 'Failed');
+        }
     }
 
     onChangeWorkingSheet(item: SheetInfo) {

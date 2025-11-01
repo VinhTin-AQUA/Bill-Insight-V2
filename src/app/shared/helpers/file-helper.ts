@@ -1,4 +1,4 @@
-import { readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+import { readTextFile, BaseDirectory, readDir, remove } from '@tauri-apps/plugin-fs';
 
 export class FileHelper {
     static async getObjectFromFile<T>(filePath: string): Promise<T | null> {
@@ -9,5 +9,20 @@ export class FileHelper {
         } catch {
             return null;
         }
+    }
+
+    static async clearAllFilesInFolder(folder: string) {
+        try {
+            const files = await readDir(folder);
+            for (const file of files) {
+                if (file.isFile) {
+                    await remove(`${folder}/${file.name}`);
+                } else if (file.isDirectory) {
+                    await remove(`${folder}/${file.name}`, {
+                        recursive: true,
+                    });
+                }
+            }
+        } catch (err) {}
     }
 }

@@ -6,10 +6,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::OnceCell;
 use yup_oauth2::{read_service_account_key, ServiceAccountAuthenticator};
-
-const SPREADSHEET_ID: &str = "1D4UeZBozLOjiIlhJ-YSuok-MqIJDCYicoI807K0tj1o"; // <-- Thay bằng ID sheet của bạn
-const SHEET_NAME: &str = "Sheet2"; // <-- Thay bằng tên sheet nếu khác
-// const SHEET_PATH: &str = "/home/newtun/Desktop/Secrets/billinsight-0b2c14cec552.json";
+use urlencoding::encode;
 
 pub struct GoogleSheetsService {
     pub client: Client,
@@ -26,7 +23,6 @@ pub async fn init_google_sheet(json_path: &str) -> bool {
     let key = match read_service_account_key(json_path).await {
         Ok(k) => k,
         Err(e) => {
-            eprintln!("Lỗi đọc file key: {:?}", e);
             return false;
         }
     };
@@ -34,7 +30,6 @@ pub async fn init_google_sheet(json_path: &str) -> bool {
     let auth = match ServiceAccountAuthenticator::builder(key).build().await {
         Ok(a) => a,
         Err(e) => {
-            println!("{:?}", e.to_string());
             return false;
         }
     };
@@ -45,7 +40,6 @@ pub async fn init_google_sheet(json_path: &str) -> bool {
     {
         Ok(token) => token,
         Err(e) => {
-            println!("{:?}", e.to_string());
             return false;
         }
     };
@@ -69,16 +63,16 @@ pub async fn init_google_sheet(json_path: &str) -> bool {
     check
 }
 
-pub async fn get_invoices() -> Result<Vec<ListInvoiceItems>, Box<dyn std::error::Error>> {
+pub async fn get_invoices(sheet_name: String, spreadsheet_id: String) -> Result<Vec<ListInvoiceItems>, Box<dyn std::error::Error>> {
     let service = GOOGLE_SHEETS_SERVICE
         .get()
         .expect("GOOGLE_SHEETS_SERVICE not initialized");
 
     // ----------- 🟢 ĐỌC DỮ LIỆU -----------
-    let range = format!("{}!A:D", SHEET_NAME);
+    let range = format!("{}!A:D", encode(sheet_name.as_str()));
     let read_url = format!(
         "https://sheets.googleapis.com/v4/spreadsheets/{}/values/{}",
-        SPREADSHEET_ID, range
+        spreadsheet_id, range
     );
 
     let read_resp = service
@@ -90,21 +84,19 @@ pub async fn get_invoices() -> Result<Vec<ListInvoiceItems>, Box<dyn std::error:
         .json::<serde_json::Value>()
         .await?;
 
-    // println!("📖 Dữ liệu đọc được:\n{:#?}", read_resp);
-
     let grouped = group_by_date(&read_resp);
     Ok(grouped)
 }
 
-pub async fn get_sheet_stats() -> Result<SheetStats, Box<dyn std::error::Error>> {
+pub async fn get_sheet_stats(sheet_name: String, spreadsheet_id: String) -> Result<SheetStats, Box<dyn std::error::Error>> {
     let service = GOOGLE_SHEETS_SERVICE
         .get()
         .expect("GOOGLE_SHEETS_SERVICE not initialized");
 
-    let range = format!("{}!E2:K2", SHEET_NAME);
+    let range = format!("{}!E2:K2", encode(sheet_name.as_str()));
     let read_url = format!(
         "https://sheets.googleapis.com/v4/spreadsheets/{}/values/{}",
-        SPREADSHEET_ID, range
+        spreadsheet_id, range
     );
 
     let resp = service.client
@@ -119,32 +111,28 @@ pub async fn get_sheet_stats() -> Result<SheetStats, Box<dyn std::error::Error>>
         .as_array()
         .ok_or("Không tìm thấy dữ liệu trong Google Sheet")?;
 
-    // Hàm tiện ích để làm sạch chuỗi
-    let clean = |s: &serde_json::Value| s.as_str().unwrap_or("").trim().to_string();
-
     let stats = SheetStats {
-        used_cash: clean(&values[0]),
-        used_bank: clean(&values[1]),
-        total_cash: clean(&values[2]),
-        total_bank: clean(&values[3]),
-        remaining_cash: clean(&values[4]),
-        remaining_bank: clean(&values[5]),
-        total_remaining: clean(&values[6]),
+        used_cash: parse_vietnamese_number(&values[0].as_str().unwrap_or("0")).unwrap_or(0.0),
+        used_bank: parse_vietnamese_number(&values[1].as_str().unwrap_or("0")).unwrap_or(0.0),
+        total_cash: parse_vietnamese_number(&values[2].as_str().unwrap_or("0")).unwrap_or(0.0),
+        total_bank: parse_vietnamese_number(&values[3].as_str().unwrap_or("0")).unwrap_or(0.0),
+        remaining_cash: parse_vietnamese_number(&values[4].as_str().unwrap_or("0")).unwrap_or(0.0),
+        remaining_bank: parse_vietnamese_number(&values[5].as_str().unwrap_or("0")).unwrap_or(0.0),
+        total_remaining: parse_vietnamese_number(&values[6].as_str().unwrap_or("0")).unwrap_or(0.0),
     };
-
     Ok(stats)
 }
 
-pub async fn set_invoices(items: Vec<InvoiceExcel>) -> Result<ResponseCommand, Box<dyn std::error::Error>> {
+pub async fn set_invoices(sheet_name: String, spreadsheet_id: String, items: Vec<InvoiceExcel>) -> Result<ResponseCommand, Box<dyn std::error::Error>> {
     let service = GOOGLE_SHEETS_SERVICE
         .get()
         .expect("GOOGLE_SHEETS_SERVICE not initialized");
 
     // ----------- 🟣 GHI DỮ LIỆU -----------
-    let write_range = format!("{}!A:D", SHEET_NAME);
+    let write_range = format!("{}!A:D", encode(sheet_name.as_str()));
     let write_url = format!(
         "https://sheets.googleapis.com/v4/spreadsheets/{}/values/{}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS",
-        SPREADSHEET_ID, write_range
+        spreadsheet_id, write_range
     );
 
     let values: Vec<Vec<serde_json::Value>> = items
@@ -178,7 +166,6 @@ pub async fn set_invoices(items: Vec<InvoiceExcel>) -> Result<ResponseCommand, B
         title: "Success".to_string(),
         is_success: true
     };
-
     Ok(response_command)
 }
 
@@ -237,8 +224,8 @@ fn group_by_date(value: &Value) -> Vec<ListInvoiceItems> {
         // Lấy dữ liệu từng cột
         let date = row[0].as_str().unwrap_or("-").trim();
         let name = row[1].as_str().unwrap_or("").trim().to_string();
-        let cash_price = row[2].as_str().unwrap_or("").trim().to_string();
-        let transfer_price = row[3].as_str().unwrap_or("").trim().to_string();
+        let cash_price = parse_vietnamese_number(row[2].as_str().unwrap_or("0")).unwrap_or(0.0);
+        let bank_price = parse_vietnamese_number(row[3].as_str().unwrap_or("0")).unwrap_or(0.0);
 
         // Cập nhật ngày hiện tại nếu có giá trị
         if date != "-" && !date.is_empty() {
@@ -253,8 +240,8 @@ fn group_by_date(value: &Value) -> Vec<ListInvoiceItems> {
         // Tạo item và thêm vào nhóm theo ngày
         let item = InvoiceItem {
             name,
-            cash_price: parse_vietnamese_number(&cash_price).unwrap_or(0.0),
-            bank_price: parse_vietnamese_number(&transfer_price).unwrap_or(0.0),
+            cash_price,
+            bank_price,
         };
 
         map.entry(current_date.clone()).or_default().push(item);
