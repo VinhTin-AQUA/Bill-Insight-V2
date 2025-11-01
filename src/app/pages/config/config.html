@@ -1,6 +1,6 @@
 <div class="flex items-center justify-center min-h-screen">
     <div class="w-full max-w-sm bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-        <form [formGroup]="configForm" >
+        <form [formGroup]="configForm">
             <!-- Logo -->
             <img src="/images/sheets.png" alt="App Logo" class="w-16 h-16 mb-4" />
 
@@ -20,6 +20,8 @@
                 />
                 @if(submitted && configForm.get('spreadSheetUrl')?.invalid) {
                 <div class="text-red-600 text-sm mt-1">URL không được để trống</div>
+                }@else if (submitted && !configForm.get('spreadSheetId')?.value) {
+                <div class="text-red-600 text-sm mt-1">Invalid URL</div>
                 }
             </div>
 
@@ -39,9 +41,7 @@
 
             <!-- Credential File -->
             <div class="w-full mb-5">
-                <label class="block mb-2 text-sm font-medium text-gray-900">
-                    Credential
-                </label>
+                <label class="block mb-2 text-sm font-medium text-gray-900"> Credential </label>
                 <input
                     (change)="onSelectFile($event)"
                     accept=".json"

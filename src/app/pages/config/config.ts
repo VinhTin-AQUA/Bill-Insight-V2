@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
 import { Router } from '@angular/router';
 import { ConfigService } from './services/config-service';
@@ -9,13 +9,13 @@ import { join } from '@tauri-apps/api/path';
 import { exists } from '@tauri-apps/plugin-fs';
 import {
     ReactiveFormsModule,
-    FormControl,
     FormGroup,
     FormBuilder,
     Validators,
 } from '@angular/forms';
 import { SpreadSheetHelper } from '../../shared/helpers/spread-sheet';
 import { ConfigModel } from './models/config';
+import { RouteNavigationHelper } from '../../shared/helpers/route-navigation-helper';
 
 @Component({
     selector: 'app-config',
@@ -38,10 +38,9 @@ export class Config {
     ngOnInit() {
         try {
             this.init();
-        this.initForm();
-        }
-        catch(e) {
-            alert(e)
+            this.initForm();
+        } catch (e) {
+            alert(e);
         }
     }
 
@@ -52,7 +51,7 @@ export class Config {
         }
 
         if (this.selectedFile) {
-            this.configService.saveCredentialFile(this.selectedFile);
+            await this.configService.saveCredentialFile(this.selectedFile);
         }
 
         const configModel: ConfigModel = {
@@ -92,7 +91,7 @@ export class Config {
             return;
         }
 
-        this.router.navigateByUrl('/home');
+        this.router.navigate(RouteNavigationHelper.MAIN.home);
     }
 
     private async initGoogleSheetService(): Promise<boolean> {

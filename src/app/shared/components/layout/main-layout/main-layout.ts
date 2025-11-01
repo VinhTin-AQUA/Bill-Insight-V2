@@ -20,23 +20,23 @@ export class MainLayout {
         this.navItems = [
             {
                 name: 'Home',
-                url: '/home',
+                url: '/main/home',
             },
             {
                 name: 'Invoices',
-                url: '/invoices',
+                url: '/main/invoices',
             },
             {
                 name: 'Add Invoice',
-                url: '/add-invoice',
+                url: '/main/add-invoice',
             },
             {
                 name: 'Config',
-                url: '/config-details',
+                url: '/main/config-details',
             },
             {
                 name: 'Settings',
-                url: '/settings',
+                url: '/main/settings',
             },
         ];
 

@@ -64,19 +64,19 @@
 
         <div class="grid gap-3">
             <div class="info-card">
-                <label>Đơn vị:</label>
+                <label>Đơn vị: </label>
                 <span>{{ nban().ten }}</span>
             </div>
             <div class="info-card">
-                <label>Mã số thuế:</label>
+                <label>Mã số thuế: </label>
                 <span>{{ nban().mst }}</span>
             </div>
             <div class="info-card">
-                <label>Địa chỉ:</label>
+                <label>Địa chỉ: </label>
                 <span>{{ nban().d_chi }}</span>
             </div>
             <div class="info-card">
-                <label>Điện thoại:</label>
+                <label>Điện thoại: </label>
                 <span>{{ nban().sdt }}</span>
             </div>
         </div>
@@ -88,7 +88,7 @@
             <div class="grid gap-2">
                 @for (tt_khac of nban().tt_khac; track $index) {
                 <div class="info-card">
-                    <label>{{ tt_khac.t_truong }}:</label>
+                    <label>{{ tt_khac.t_truong }}: </label>
                     <span>{{ tt_khac.d_lieu }}</span>
                 </div>
                 }

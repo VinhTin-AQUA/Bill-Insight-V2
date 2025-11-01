@@ -4,48 +4,51 @@ import { MainLayout } from './shared/components/layout/main-layout/main-layout';
 import { AddInvoice } from './pages/add-invoice/add-invoice';
 import { ListInvoices } from './pages/list-invoices/list-invoices';
 import { Settings } from './pages/settings/settings';
-import { Config } from './pages/config/config';
 import { ConfigDetails } from './pages/config-details/config-details';
+import { AppRouteNames, AuthRouteNames, MainRouteNames } from './core/enums/route-names';
 
 export const routes: Routes = [
     {
-        path: '',
+        path: AppRouteNames.Auth,
         component: AuthLayout,
         children: [
             {
-                path: 'config',
+                path: AuthRouteNames.Config,
                 loadComponent: () => import('./pages/config/config').then((m) => m.Config),
             },
-            { path: '', redirectTo: 'config', pathMatch: 'full' },
+            {
+                path: '',
+                redirectTo: `${AppRouteNames.Auth}/${AuthRouteNames.Config}`,
+                pathMatch: 'full',
+            },
         ],
     },
     {
-        path: '',
+        path: AppRouteNames.Main,
         component: MainLayout,
         children: [
-            { path: 'home', loadComponent: () => import('./pages/home/home').then((m) => m.Home) },
             {
-                path: 'invoices',
+                path: MainRouteNames.Home,
+                loadComponent: () => import('./pages/home/home').then((m) => m.Home),
+            },
+            {
+                path: MainRouteNames.Invoices,
                 component: ListInvoices,
             },
             {
-                path: 'config',
-                component: Config,
-            },
-            {
-                path: 'config-details',
+                path: MainRouteNames.ConfigDetails,
                 component: ConfigDetails,
             },
             {
-                path: 'settings',
+                path: MainRouteNames.Settings,
                 component: Settings,
             },
             {
-                path: 'add-invoice',
+                path: MainRouteNames.AddInvoice,
                 component: AddInvoice,
             },
-            { path: '', redirectTo: 'home', pathMatch: 'full' },
+            { path: '', redirectTo: '/home', pathMatch: 'full' },
         ],
     },
-    { path: '**', redirectTo: '' },
+    { path: '**', redirectTo: `${AppRouteNames.Auth}/${AuthRouteNames.Config}` },
 ];

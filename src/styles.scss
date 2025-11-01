@@ -41,7 +41,7 @@ body {
 }
 
 .info-card {
-  @apply flex justify-between items-center bg-gray-50 px-3 py-2 rounded-lg border border-gray-100 text-sm text-gray-700;
+  @apply  bg-gray-50 px-3 py-2 rounded-lg border border-gray-100 text-sm text-gray-700;
 }
 
 .summary-card {
@@ -87,6 +87,10 @@ body {
 // .dark .file-input {
 //   @apply bg-gray-800 border-gray-700 hover:bg-gray-700 text-gray-100;
 // }
+
+input[type="radio"] {
+  accent-color: #15803d; /* hoặc màu bạn muốn */
+}
 
 
 /* ⚡ Giữ nguyên kích thước bố cục khi xuất hiện scrollbar */
