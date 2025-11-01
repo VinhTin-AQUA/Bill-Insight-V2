@@ -12,6 +12,7 @@ export class TauriCommandSerivce {
     static readonly GET_CAPTCHA_AND_ASP_SESSION = 'get_captcha_and_asp_session';
     static readonly GET_XML_INVOICE_DATA = 'get_xml_invoice_data';
     static readonly SET_INVOICES = 'set_invoices';
+    static readonly LIST_SHEETS = 'list_sheets';
 
     constructor(private dialogService: DialogService) {}
 
@@ -23,6 +24,7 @@ export class TauriCommandSerivce {
             this.dialogService.showLoadingDialog(false);
             return initOk;
         } catch (e) {
+            console.log(e);
             alert(e);
             this.dialogService.showLoadingDialog(false);
             return null;

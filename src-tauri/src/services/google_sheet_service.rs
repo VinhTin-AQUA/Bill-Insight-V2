@@ -1,5 +1,5 @@
 use crate::helpers::parse_vietnamese_number;
-use crate::models::{InvoiceExcel, InvoiceItem, ListInvoiceItems, ResponseCommand, SheetStats};
+use crate::models::{InvoiceExcel, InvoiceItem, ListInvoiceItems, ResponseCommand, SheetInfo, SheetStats, Spreadsheet};
 use reqwest::Client;
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -180,6 +180,38 @@ pub async fn set_invoices(items: Vec<InvoiceExcel>) -> Result<ResponseCommand, B
     };
 
     Ok(response_command)
+}
+
+pub async fn list_sheets(spreadsheet_id: String) -> Result<Vec<SheetInfo>, Box<dyn std::error::Error>> {
+    let service = GOOGLE_SHEETS_SERVICE
+        .get()
+        .expect("GOOGLE_SHEETS_SERVICE not initialized");
+
+    let url = format!(
+        "https://sheets.googleapis.com/v4/spreadsheets/{}?fields=sheets.properties(sheetId,title)",
+        spreadsheet_id
+    );
+
+    let resp = service
+        .client
+        .get(&url)
+        .bearer_auth(&service.access_token)
+        .send()
+        .await?
+        .error_for_status()?
+        .json::<Spreadsheet>()
+        .await?;
+
+    let sheets = resp
+        .sheets
+        .into_iter()
+        .map(|s| SheetInfo {
+            sheet_id: s.properties.sheet_id,
+            title: s.properties.title,
+        })
+        .collect();
+
+    Ok(sheets)
 }
 
 /* private methods */

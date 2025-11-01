@@ -1,21 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
 import { Router } from '@angular/router';
-import { ConfigService } from './services/config-service';
+import { SpreadsheetConfigService } from '../../shared/services/config-service';
 import { AppFolderHelper } from '../../shared/helpers/app-folder';
 import { EAppFolderNames } from '../../core/enums/folder-names';
 import { EConfigFileNames } from '../../core/enums/file-names';
 import { join } from '@tauri-apps/api/path';
 import { exists } from '@tauri-apps/plugin-fs';
-import {
-    ReactiveFormsModule,
-    FormGroup,
-    FormBuilder,
-    Validators,
-} from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { SpreadSheetHelper } from '../../shared/helpers/spread-sheet';
-import { ConfigModel } from './models/config';
+import { SpreadsheetConfigModel } from '../../shared/models/spreadsheet_config';
 import { RouteNavigationHelper } from '../../shared/helpers/route-navigation-helper';
+import { SpreadsheetConfigStore } from '../../shared/stores/config-store';
+import { FileHelper } from '../../shared/helpers/file-helper';
 
 @Component({
     selector: 'app-config',
@@ -28,9 +25,11 @@ export class Config {
     configForm!: FormGroup;
     submitted = false;
 
+    spreadsheetConfigStore = inject(SpreadsheetConfigStore);
+
     constructor(
         private tauriCommandSerivce: TauriCommandSerivce,
-        private configService: ConfigService,
+        private configService: SpreadsheetConfigService,
         private router: Router,
         private fb: FormBuilder
     ) {}
@@ -54,7 +53,7 @@ export class Config {
             await this.configService.saveCredentialFile(this.selectedFile);
         }
 
-        const configModel: ConfigModel = {
+        const configModel: SpreadsheetConfigModel = {
             spreadSheetId: this.configForm.controls['spreadSheetId'].value,
             spreadSheetUrl: this.configForm.controls['spreadSheetUrl'].value,
             workingSheet: {
@@ -120,6 +119,13 @@ export class Config {
 
         const credentialPathExists = await exists(credentialPath);
         const configPathExists = await exists(configPath);
+
+        const spreadsheetConfig = await FileHelper.getObjectFromFile<SpreadsheetConfigModel>(
+            configPath
+        );
+        if (spreadsheetConfig) {
+            this.spreadsheetConfigStore.update(spreadsheetConfig);
+        }
 
         return credentialPathExists && configPathExists;
     }

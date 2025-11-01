@@ -31,6 +31,7 @@ pub fn run() {
             get_invoices,
             set_invoices,
             get_sheet_stats,
+            list_sheets,
             get_captcha_and_asp_session,
             get_xml_invoice_data
         ])

@@ -1,4 +1,4 @@
-export interface ConfigModel {
+export interface SpreadsheetConfigModel {
     spreadSheetUrl: string;
     spreadSheetId: string;
     workingSheet: WorkingSheetModel;

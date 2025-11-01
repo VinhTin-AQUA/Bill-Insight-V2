@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
-import { AppFolderHelper } from '../../../shared/helpers/app-folder';
+import { AppFolderHelper } from '../helpers/app-folder';
 import { join } from '@tauri-apps/api/path';
-import { writeFile, writeTextFile } from '@tauri-apps/plugin-fs';
-import { EAppFolderNames } from '../../../core/enums/folder-names';
-import { EConfigFileNames } from '../../../core/enums/file-names';
-import { ConfigModel } from '../models/config';
+import { remove, writeFile, writeTextFile } from '@tauri-apps/plugin-fs';
+import { EAppFolderNames } from '../../core/enums/folder-names';
+import { EConfigFileNames } from '../../core/enums/file-names';
+import { SpreadsheetConfigModel } from '../models/spreadsheet_config';
 
 @Injectable({
     providedIn: 'root',
 })
-export class ConfigService {
+export class SpreadsheetConfigService {
     constructor() {}
 
     async saveCredentialFile(file: File) {
@@ -31,10 +31,21 @@ export class ConfigService {
         reader.readAsArrayBuffer(file);
     }
 
-    async saveConfig(config: ConfigModel) {
+    async saveConfig(config: SpreadsheetConfigModel) {
         const content = JSON.stringify(config, null, 2);
         const configFolder = await AppFolderHelper.getFolderPath(EAppFolderNames.ConfigDir);
         const configPath = await join(configFolder, EConfigFileNames.CONFIG_PATH);
         await writeTextFile(configPath, content);
+    }
+
+    async removeCredentialFilee() {
+        const credentialFolder = await AppFolderHelper.getFolderPath(EAppFolderNames.CredentialDir);
+        const credentialPath = await join(
+            credentialFolder,
+            EConfigFileNames.GOOGLE_CREDENTIAL_FILE_NAME
+        );
+        console.log(credentialPath);
+
+        await remove(credentialPath);
     }
 }

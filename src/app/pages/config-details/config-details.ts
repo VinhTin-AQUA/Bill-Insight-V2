@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
     FormBuilder,
     FormGroup,
@@ -8,10 +8,9 @@ import {
     Validators,
 } from '@angular/forms';
 import { SpreadSheetHelper } from '../../shared/helpers/spread-sheet';
-import { ConfigService } from '../config/services/config-service';
+import { SpreadsheetConfigService } from '../../shared/services/config-service';
 import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
-import { ConfigDetailsService } from './services/config-details';
-import { ConfigModel } from '../config/models/config';
+import { SpreadsheetConfigModel } from '../../shared/models/spreadsheet_config';
 import { AppFolderHelper } from '../../shared/helpers/app-folder';
 import { EAppFolderNames } from '../../core/enums/folder-names';
 import { join } from '@tauri-apps/api/path';
@@ -19,6 +18,9 @@ import { EConfigFileNames } from '../../core/enums/file-names';
 import { exists } from '@tauri-apps/plugin-fs';
 import { Router } from '@angular/router';
 import { RouteNavigationHelper } from '../../shared/helpers/route-navigation-helper';
+import { FileHelper } from '../../shared/helpers/file-helper';
+import { SpreadsheetConfigStore } from '../../shared/stores/config-store';
+import { SheetInfo } from './models/sheet-info';
 
 @Component({
     selector: 'app-config-details',
@@ -31,14 +33,15 @@ export class ConfigDetails {
     configForm!: FormGroup;
     submitted = false;
 
-    sheets = [{ name: 'Sheet1' }, { name: 'Sheet2' }, { name: 'Sheet3' }];
-    workingSheet: string = '';
+    sheets = signal<SheetInfo[]>([]);
 
     isAddSheetModalOpen = false; // trạng thái mở/đóng modal
+    spreadsheetConfigStore = inject(SpreadsheetConfigStore);
+    newSheetName: string = '';
 
     constructor(
         private fb: FormBuilder,
-        private configDetailsService: ConfigDetailsService,
+        private spreadsheetConfigService: SpreadsheetConfigService,
         private tauriCommandSerivce: TauriCommandSerivce,
         private router: Router
     ) {}
@@ -46,9 +49,14 @@ export class ConfigDetails {
     ngOnInit() {
         try {
             this.initForm();
+            this.getListSheets();
         } catch (e) {
             alert(e);
         }
+    }
+
+    ngOnViewInit() {
+        this.updateForm();
     }
 
     openModal(flag: boolean) {
@@ -78,11 +86,11 @@ export class ConfigDetails {
         console.log(this.selectedFile);
 
         if (this.selectedFile) {
-            await this.configDetailsService.removeCredentialFilee();
-            await this.configDetailsService.saveCredentialFile(this.selectedFile);
+            await this.spreadsheetConfigService.removeCredentialFilee();
+            await this.spreadsheetConfigService.saveCredentialFile(this.selectedFile);
         }
 
-        const configModel: ConfigModel = {
+        const configModel: SpreadsheetConfigModel = {
             spreadSheetId: this.configForm.controls['spreadSheetId'].value,
             spreadSheetUrl: this.configForm.controls['spreadSheetUrl'].value,
             workingSheet: {
@@ -91,24 +99,30 @@ export class ConfigDetails {
                 title: '',
             },
         };
-        await this.configDetailsService.saveConfig(configModel);
+        await this.spreadsheetConfigService.saveConfig(configModel);
         await this.init();
     }
 
     addSheet() {
-        const newName = prompt('Nhập tên Sheet mới:');
-        if (newName) {
-            this.sheets.push({ name: newName });
-        }
+        alert(this.newSheetName);
     }
 
-    saveWorkingSheet() {
-        if (!this.workingSheet) {
-            alert('Vui lòng chọn 1 sheet!');
-            return;
-        }
-        console.log('Working sheet:', this.workingSheet);
-        alert(`Đã lưu "${this.workingSheet}" làm working sheet`);
+    async saveWorkingSheet() {
+        const configModel: SpreadsheetConfigModel = {
+            spreadSheetId: this.spreadsheetConfigStore.spreadSheetId(),
+            spreadSheetUrl: this.spreadsheetConfigStore.spreadSheetUrl(),
+            workingSheet: {
+                id: this.spreadsheetConfigStore.workingSheet().id,
+                isActive: true,
+                title: this.spreadsheetConfigStore.workingSheet().title,
+            },
+        };
+
+        await this.spreadsheetConfigService.saveConfig(configModel);
+    }
+
+    onChangeWorkingSheet(item: SheetInfo) {
+        this.spreadsheetConfigStore.updateWorkingSheet(item.sheet_id, item.title);
     }
 
     private initForm() {
@@ -116,6 +130,15 @@ export class ConfigDetails {
             spreadSheetUrl: ['', [Validators.required]],
             spreadSheetId: ['', [Validators.required]],
         });
+    }
+
+    private updateForm() {
+        this.configForm.controls['spreadSheetUrl'].setValue(
+            this.spreadsheetConfigStore.spreadSheetUrl()
+        );
+        this.configForm.controls['spreadSheetId'].setValue(
+            this.spreadsheetConfigStore.spreadSheetId()
+        );
     }
 
     private async init() {
@@ -158,6 +181,23 @@ export class ConfigDetails {
         const credentialPathExists = await exists(credentialPath);
         const configPathExists = await exists(configPath);
 
+        const spreadsheetConfig = await FileHelper.getObjectFromFile<SpreadsheetConfigModel>(
+            configPath
+        );
+        if (spreadsheetConfig) {
+            this.spreadsheetConfigStore.update(spreadsheetConfig);
+        }
+
         return credentialPathExists && configPathExists;
+    }
+
+    private async getListSheets() {
+        const r = await this.tauriCommandSerivce.invokeCommand<SheetInfo[]>(
+            TauriCommandSerivce.LIST_SHEETS,
+            { spreadsheetId: this.spreadsheetConfigStore.spreadSheetId() }
+        );
+        if (r) {
+            this.sheets.set(r);
+        }
     }
 }

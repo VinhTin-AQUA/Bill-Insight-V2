@@ -1,11 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { InvoiceItem, ListInvoiceItems } from './models/invoice-item';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
 
 @Component({
     selector: 'app-list-invoices',
-    imports: [DatePipe, DecimalPipe],
+    imports: [DecimalPipe],
     templateUrl: './list-invoices.html',
     styleUrl: './list-invoices.scss',
 })

@@ -95,16 +95,16 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
-                    @for (sheet of sheets; track $index) {
+                    @for (sheet of sheets(); track $index) {
                     <tr class="hover:bg-gray-50 transition">
                         <td class="px-4 py-2">{{ $index + 1 }}</td>
-                        <td class="px-4 py-2">{{ sheet.name }}</td>
+                        <td class="px-4 py-2">{{ sheet.title }}</td>
                         <td class="px-4 py-2 text-center">
                             <input
                                 type="radio"
                                 name="workingSheet"
-                                [value]="sheet.name"
-                                [(ngModel)]="workingSheet"
+                                [checked]="spreadsheetConfigStore.workingSheet().id === sheet.sheet_id"
+                                (change)="onChangeWorkingSheet(sheet)"
                                 class="text-green-900 focus:ring-green-900"
                             />
                         </td>
@@ -166,7 +166,13 @@
                     <label for="email" class="block mb-2 text-sm font-medium text-gray-900"
                         >Tên sheet</label
                     >
-                    <input type="text" class="input-modern" placeholder="" required />
+                    <input
+                        [(ngModel)]="newSheetName"
+                        type="text"
+                        class="input-modern"
+                        placeholder=""
+                        required
+                    />
                 </div>
 
                 <button (click)="addSheet()" type="submit" class="btn-primary">Thêm sheet</button>
