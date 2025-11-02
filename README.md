@@ -33,3 +33,9 @@
     npm run tauri dev
     ```
 
+### Clean
+
+```bash
+cd src-tauri
+cargo clean
+```

@@ -24,13 +24,15 @@ log = "0.4"
 tauri = { version = "2.9.1", features = ["protocol-asset"] }
 tauri-plugin-log = "2"
 tokio = { version = "1.48.0", features = ["full"] }
-reqwest = { version = "0.12.24", features = ["cookies", "json", "rustls-tls"] }
-yup-oauth2 = { version = "12.1.0", features = ["service_account", "hyper-rustls"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "cookies", "rustls-tls-webpki-roots"] }
+yup-oauth2 = { version = "12.1.0", default-features = false, features = ["service_account", "hyper-rustls",  "ring"] }
 tauri-plugin-fs = "2"
 regex = "1"
-quick-xml = { version = "0.38.0"}
 uuid = { version = "1", features = ["v4"] }
 anyhow = "1"
-reqwest_cookie_store = "0.9.0"
-roxmltree = "0.19"
+reqwest_cookie_store = { version = "0.9", default-features = false }
+roxmltree = "0.21.0"
 urlencoding = "2"
+rustls = "0.23.34"
+webpki-roots = "1.0.4"
+hyper = "1.7.0"

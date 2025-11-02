@@ -104,6 +104,7 @@ export class Config {
             TauriCommandSerivce.INIT_GOOGLE_SHEET_COMMAND,
             { jsonPath: credentialPath }
         );
+
         return r === true;
     }
 

@@ -1,6 +1,5 @@
 <div class="flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-sm bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-        <form [formGroup]="configForm">
+    <form [formGroup]="configForm" class="w-full max-w-sm bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
             <!-- Logo -->
             <img src="/images/sheets.png" alt="App Logo" class="w-16 h-16 mb-4" />
 
@@ -57,10 +56,9 @@
             <button
                 (click)="saveConfig()"
                 type="submit"
-                class="w-full p-2.5 text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm me-2 mb-2"
+                class="btn-primary w-full"
             >
                 Save
             </button>
-        </form>
-    </div>
+    </form>
 </div>

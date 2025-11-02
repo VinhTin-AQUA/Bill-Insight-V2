@@ -4,8 +4,9 @@ use crate::services::google_sheet_service;
 use tauri::command;
 
 #[command]
-pub async fn init_google_sheet_command(json_path: String) -> bool {
-    google_sheet_service::init_google_sheet(&json_path).await
+pub async fn init_google_sheet_command(json_path: String) -> Result<Option<bool>, String> {
+    let r = google_sheet_service::init_google_sheet(&json_path).await.map_err(|e| e.to_string());
+    r
 }
 
 #[command]

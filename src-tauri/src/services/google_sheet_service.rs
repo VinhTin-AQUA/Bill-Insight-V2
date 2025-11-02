@@ -4,9 +4,13 @@ use reqwest::Client;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::sync::Arc;
+use anyhow::anyhow;
 use tokio::sync::OnceCell;
 use yup_oauth2::{read_service_account_key, ServiceAccountAuthenticator};
 use urlencoding::encode;
+use webpki_roots::TLS_SERVER_ROOTS;
+use rustls::{RootCertStore};
+use yup_oauth2::hyper_rustls::HttpsConnectorBuilder;
 
 pub struct GoogleSheetsService {
     pub client: Client,
@@ -15,24 +19,43 @@ pub struct GoogleSheetsService {
 
 static GOOGLE_SHEETS_SERVICE: OnceCell<Arc<GoogleSheetsService>> = OnceCell::const_new();
 
-pub async fn init_google_sheet(json_path: &str) -> bool {
+pub async fn init_google_sheet(json_path: &str) -> anyhow::Result<Option<bool>> {
     if GOOGLE_SHEETS_SERVICE.get().is_some() {
-        return true;
+        return Ok(Some(true));
     }
 
     let key = match read_service_account_key(json_path).await {
         Ok(k) => k,
         Err(e) => {
-            return false;
+            return Err(anyhow!("e1: {:?}", e));
         }
     };
 
-    let auth = match ServiceAccountAuthenticator::builder(key).build().await {
+    // Tạo RootCertStore từ chứng chỉ của webpki-roots
+    let root_store = RootCertStore {
+        roots: TLS_SERVER_ROOTS.to_vec(),
+    };
+
+    // Tạo cấu hình TLS với root_store
+    let tls_config = rustls::ClientConfig::builder()
+        .with_root_certificates(root_store)
+        .with_no_client_auth();
+
+    let https_connector = HttpsConnectorBuilder::new()
+        .with_tls_config(tls_config)
+        .https_only()
+        .enable_http1()
+        .build();
+
+    let auth = match ServiceAccountAuthenticator::builder(key)
+
+        .build().await {
         Ok(a) => a,
         Err(e) => {
-            return false;
+            return Err(anyhow!("e2: {:?}", e));
         }
     };
+
 
     let token = match auth
         .token(&["https://www.googleapis.com/auth/spreadsheets"])
@@ -40,7 +63,7 @@ pub async fn init_google_sheet(json_path: &str) -> bool {
     {
         Ok(token) => token,
         Err(e) => {
-            return false;
+            return Err(anyhow!("e3: {:?}", e));
         }
     };
 
@@ -48,19 +71,32 @@ pub async fn init_google_sheet(json_path: &str) -> bool {
     let has_token = token_opt.is_some();
 
     if !has_token {
-        return false;
+        return Err(anyhow!("e4: {:?}", has_token));
     }
-
     let access_token = token_opt.unwrap();
-    let client = Client::new();
+
+    // 🟢 Tạo RootCertStore từ danh sách chứng chỉ webpki-roots
+    // let root_store = RootCertStore {
+    //     roots: TLS_SERVER_ROOTS.into(),
+    // };
+    //
+    // // 🟢 Cấu hình client TLS
+    // let tls_config = ClientConfig::builder()
+    //     .with_root_certificates(root_store)
+    //     .with_no_client_auth();
+
+    // 🟢 Tạo client Reqwest với TLS cấu hình riêng
+    let client = Client::builder()
+        .use_rustls_tls()
+        .build()?;
+
     let service = GoogleSheetsService {
         client,
         access_token: access_token.to_string(),
     };
 
     let check = GOOGLE_SHEETS_SERVICE.set(Arc::new(service)).is_ok();
-
-    check
+    Ok(Some(check))
 }
 
 pub async fn get_invoices(sheet_name: String, spreadsheet_id: String) -> Result<Vec<ListInvoiceItems>, Box<dyn std::error::Error>> {
