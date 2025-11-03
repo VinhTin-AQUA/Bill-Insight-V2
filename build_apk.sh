@@ -5,4 +5,8 @@ export KEY_PASSWORD="abcdef@123"
 
 # newtun-release-key.keystore lưu tại src-tauri/gen/android/app/newtun-release-key.keystore
 
-npm run tauri android build
+export JAVA_HOME=/home/newtun/.local/apps/android-studio/jbr
+export ANDROID_HOME=$HOME/Android/Sdk
+export ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/27.3.13750724
+
+npm run tauri android build -- --target aarch64

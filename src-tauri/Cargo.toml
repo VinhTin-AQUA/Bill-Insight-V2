@@ -36,3 +36,5 @@ urlencoding = "2"
 rustls = "0.23.34"
 webpki-roots = "1.0.4"
 hyper = "1.7.0"
+hyper-rustls = "0.27.7"
+
