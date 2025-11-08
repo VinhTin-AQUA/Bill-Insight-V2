@@ -43,4 +43,8 @@ export class ListInvoices {
     getTotalBank(products: InvoiceItem[]) {
         return products.reduce((sum, p) => sum + p.bank_price, 0);
     }
+
+    toggleGroup(group: any) {
+        group.expanded = !group.expanded;
+    }
 }

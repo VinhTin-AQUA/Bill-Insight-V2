@@ -41,7 +41,8 @@ pub fn run() {
             get_sheet_stats,
             list_sheets,
             get_captcha_and_asp_session,
-            get_xml_invoice_data
+            get_xml_invoice_data,
+            update_sheet_name
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

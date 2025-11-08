@@ -34,3 +34,9 @@ pub struct SheetInfo {
     pub sheet_id: i64,
     pub title: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateSheetInfo {
+    pub sheet_id: i64,
+    pub title: String,
+}

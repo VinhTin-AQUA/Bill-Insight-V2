@@ -40,6 +40,9 @@ export class ConfigDetails {
     spreadsheetConfigStore = inject(SpreadsheetConfigStore);
     newSheetName: string = '';
 
+    isUpdateSheetNameOpen = signal<boolean>(false);
+    updateSheet: SheetInfo | null = null;
+
     constructor(
         private fb: FormBuilder,
         private spreadsheetConfigService: SpreadsheetConfigService,
@@ -142,6 +145,60 @@ export class ConfigDetails {
 
     onChangeWorkingSheet(item: SheetInfo) {
         this.spreadsheetConfigStore.updateWorkingSheet(item.sheet_id, item.title);
+    }
+
+    onOpenUpdateSheetNameModal(item: SheetInfo | null) {
+        if (item) {
+            this.updateSheet = { sheet_id: item.sheet_id, title: item.title };
+        }
+        this.isUpdateSheetNameOpen.update((x) => !x);
+    }
+
+    async updateSheetName() {
+        if (!this.updateSheet) {
+            return;
+        }
+        const r = await this.tauriCommandSerivce.invokeCommand<boolean>(
+            TauriCommandSerivce.UPDATE_SHEET_NAME,
+            {
+                updateSheet: this.updateSheet,
+                spreadsheetId: this.spreadsheetConfigStore.spreadSheetId(),
+            }
+        );
+        this.isUpdateSheetNameOpen.set(false);
+
+        if (!r) {
+            this.dialogService.updateNoticeDialogState(true, false, 'Cập nhật thất bại', 'Failed');
+            return;
+        }
+
+        this.dialogService.updateNoticeDialogState(true, true, 'Cập nhật thành công', 'Success');
+
+        if (this.spreadsheetConfigStore.workingSheet().id === this.updateSheet.sheet_id) {
+            this.spreadsheetConfigStore.updateWorkingSheet(
+                this.updateSheet.sheet_id,
+                this.updateSheet.title
+            );
+
+            const configModel: SpreadsheetConfigModel = {
+                spreadSheetId: this.configForm.controls['spreadSheetId'].value,
+                spreadSheetUrl: this.configForm.controls['spreadSheetUrl'].value,
+                workingSheet: {
+                    id: this.spreadsheetConfigStore.workingSheet().id,
+                    isActive: true,
+                    title: this.updateSheet.title,
+                },
+            };
+
+            await this.spreadsheetConfigService.saveConfig(configModel);
+        }
+
+        // sheets
+
+        const sheetInList = this.sheets().find((x) => x.sheet_id === this.updateSheet?.sheet_id);
+        if (sheetInList) {
+            sheetInList.title = this.updateSheet.title;
+        }
     }
 
     private initForm() {

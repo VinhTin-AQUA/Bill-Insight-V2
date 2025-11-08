@@ -1,5 +1,5 @@
 use crate::helpers::parse_vietnamese_number;
-use crate::models::{InvoiceExcel, InvoiceItem, ListInvoiceItems, ResponseCommand, SheetInfo, SheetStats, Spreadsheet};
+use crate::models::{InvoiceExcel, InvoiceItem, ListInvoiceItems, ResponseCommand, SheetInfo, SheetStats, Spreadsheet, UpdateSheetInfo};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::fs;
@@ -148,7 +148,6 @@ impl GoogleSheetsService {
         Ok(response_command)
     }
 
-
     pub async fn list_sheets(&mut self, spreadsheet_id: String) -> Result<Vec<SheetInfo>, Box<dyn std::error::Error>> {
         let url = format!("{}/{}?fields=sheets.properties(sheetId,title)",Self::BASE_API,spreadsheet_id);
 
@@ -171,6 +170,38 @@ impl GoogleSheetsService {
             .collect();
 
         Ok(sheets)
+    }
+
+    pub async fn update_sheet_name(&mut self, request: UpdateSheetInfo, spreadsheet_id: String) -> anyhow::Result<Option<bool>> {
+
+        // JSON body để đổi tên sheet
+        let body = json!({
+            "requests": [
+                {
+                    "updateSheetProperties": {
+                        "properties": {
+                            "sheetId": request.sheet_id,
+                            "title": request.title
+                        },
+                        "fields": "title"
+                    }
+                }
+            ]
+        });
+
+        let url = format!(
+            "https://sheets.googleapis.com/v4/spreadsheets/{}:batchUpdate",
+            spreadsheet_id
+        );
+
+        let res = self.client
+            .post(&url)
+            .bearer_auth(self.access_token.as_str())
+            .json(&body)
+            .send()
+            .await?;
+
+        Ok(Some(res.status().is_success()))
     }
 
     /* private methods */
@@ -219,22 +250,6 @@ impl GoogleSheetsService {
 
         let token: TokenResponse = res.json().await?;
         Ok(Some(token))
-    }
-
-    async fn get_sheets(access_token: &str) -> anyhow::Result<()> {
-        let client = Client::new();
-        let url = format!("{}/<spread_sheet_id>/values/Sheet2!E2:K2", Self::BASE_API);
-
-        let res = client
-            .get(url)
-            .bearer_auth(access_token)
-            .send()
-            .await?
-            .error_for_status()?;
-
-        let text = res.text().await?;
-        println!("Response: {}", text);
-        Ok(())
     }
 
     fn group_by_date(value: &Value) -> Vec<ListInvoiceItems> {

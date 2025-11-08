@@ -6,5 +6,6 @@ export interface InvoiceItem {
 
 export interface ListInvoiceItems {
     date: string; // "2025-10-25"
+    expanded: boolean;
     items: InvoiceItem[];
 }

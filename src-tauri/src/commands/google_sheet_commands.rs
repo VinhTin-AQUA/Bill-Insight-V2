@@ -1,5 +1,5 @@
 
-use crate::models::{InvoiceExcel, ListInvoiceItems, ResponseCommand, SheetInfo, SheetStats};
+use crate::models::{InvoiceExcel, ListInvoiceItems, ResponseCommand, SheetInfo, SheetStats, UpdateSheetInfo};
 use crate::services::{TokenResponse};
 use tauri::{command, State};
 use tokio::sync::Mutex;
@@ -76,3 +76,17 @@ pub async fn list_sheets(
     r
 }
 
+#[command]
+pub async fn update_sheet_name(
+    state: State<'_, Mutex<AppState>>,
+    update_sheet: UpdateSheetInfo,
+    spreadsheet_id: String
+) -> Result<Option<bool>, String> {
+    let mut state_guard = state.lock().await;
+    let google_service = &mut state_guard.google_sheet_service;
+
+    let r = google_service.lock().await.update_sheet_name(update_sheet, spreadsheet_id)
+        .await
+        .map_err(|e| e.to_string());
+    r
+}

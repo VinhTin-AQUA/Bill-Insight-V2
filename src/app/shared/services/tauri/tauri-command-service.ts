@@ -13,6 +13,7 @@ export class TauriCommandSerivce {
     static readonly GET_XML_INVOICE_DATA = 'get_xml_invoice_data';
     static readonly SET_INVOICES = 'set_invoices';
     static readonly LIST_SHEETS = 'list_sheets';
+    static readonly UPDATE_SHEET_NAME = 'update_sheet_name';
 
     constructor(private dialogService: DialogService) {}
 
