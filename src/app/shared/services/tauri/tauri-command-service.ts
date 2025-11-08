@@ -17,21 +17,10 @@ export class TauriCommandSerivce {
     constructor(private dialogService: DialogService) {}
 
     async invokeCommand<T>(cmd: string, params: any): Promise<T | null> {
-        console.log(123);
-        
         this.dialogService.showLoadingDialog(true);
-
         try {
-            console.log(345);
-
             const initOk = await invoke<T>(cmd, params);
-
-            console.log(456);
-
             this.dialogService.showLoadingDialog(false);
-
-            console.log("initOk: ", initOk);
-            
             return initOk;
         } catch (e) {
             alert(e);

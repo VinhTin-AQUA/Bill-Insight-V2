@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
 import { Router } from '@angular/router';
 import { SpreadsheetConfigService } from '../../shared/services/config-service';
@@ -24,6 +24,7 @@ export class Config {
     selectedFile: File | null = null;
     configForm!: FormGroup;
     submitted = false;
+    initial = signal<boolean>(false);
 
     spreadsheetConfigStore = inject(SpreadsheetConfigStore);
 
@@ -100,12 +101,12 @@ export class Config {
             EConfigFileNames.GOOGLE_CREDENTIAL_FILE_NAME
         );
 
-        const r = await this.tauriCommandSerivce.invokeCommand<boolean>(
+        const r = await this.tauriCommandSerivce.invokeCommand<any>(
             TauriCommandSerivce.INIT_GOOGLE_SHEET_COMMAND,
             { jsonPath: credentialPath }
         );
 
-        return r === true;
+        return r !== null;
     }
 
     private async checkConfig(): Promise<boolean> {

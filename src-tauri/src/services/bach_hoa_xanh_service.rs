@@ -101,6 +101,8 @@ impl BachHoaXanhService {
 
         // let xml_path  = "/home/newtun/.local/share/com.newtun.billinsight/Temps/de306117-9a96-47aa-9352-00a8a0399241.xml".to_string();
         let read_xml_result = Self::parse_xml_data(&self, xml_path.as_str()).await?;
+
+        self.clear_cookies();
         Ok(Some(read_xml_result))
     }
 
@@ -261,13 +263,31 @@ impl BachHoaXanhService {
     }
 
     async fn get_prefix_and_svid(&self) -> anyhow::Result<(Option<String>, Option<String>)> {
+        println!("==================================================================================================================================");
         let resp = self.client.get(&self.api_url).send().await?;
+
+        println!("resp {:#?}", resp);
+
+
         let cookies = resp.cookies().map(|c| (c.name().to_string(), c.value().to_string())).collect::<HashMap<_, _>>();
+
+        println!("cookies {:#?}", cookies);
+
         let svid = cookies.get("SvID").cloned();
+
+        println!("svid {:#?}", svid);
+
+
         let html = resp.text().await?;
+
+        println!("html {:#?}", html);
+
+
 
         let re = Regex::new(r#"<img\s+[^>]*src="/home/getcaptchaimage\?prefix=(\d+)""#)?;
         let prefix = re.captures(&html).map(|c| c[1].to_string());
+
+         println!("prefix {:#?}", prefix);
 
         Ok((svid, prefix))
     }
@@ -293,4 +313,12 @@ impl BachHoaXanhService {
             .unwrap_or("")
             .to_string()
     }
+
+    // Phương thức clear cookie
+    pub fn clear_cookies(&self) {
+        let mut store = self.cookie_store.lock().unwrap();
+        store.clear();
+        println!("Đã xóa toàn bộ cookie!");
+    }
+
 }

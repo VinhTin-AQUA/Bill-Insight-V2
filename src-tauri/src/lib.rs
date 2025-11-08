@@ -1,17 +1,24 @@
-use std::sync::Arc;
+use std::sync::{Arc};
 
 mod commands;
 mod helpers;
 mod models;
 mod services;
+mod states;
 
 use commands::*;
-use services::{BachHoaXanhService};
+use services::{BachHoaXanhService, GoogleSheetsService};
+use states::AppState;
+use tauri::Manager;
+use tokio::sync::Mutex;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Khởi tạo service
-    let service = Arc::new(BachHoaXanhService::new());
+
+    let state = Mutex::new(AppState {
+        bhx_service: Mutex::new(BachHoaXanhService::new()),
+        google_sheet_service: Mutex::new(GoogleSheetsService::new()),
+    });
 
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
@@ -23,9 +30,10 @@ pub fn run() {
                         .build(),
                 )?;
             }
+
+            app.manage(state);
             Ok(())
         })
-        .manage(service)
         .invoke_handler(tauri::generate_handler![
             init_google_sheet_command,
             get_invoices,

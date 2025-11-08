@@ -1,10 +1,9 @@
-use std::sync::Arc;
-use tauri::State;
 use tokio::sync::Mutex;
 
-use crate::services::BachHoaXanhService;
+use crate::services::{BachHoaXanhService, GoogleSheetsService};
 
-#[derive(Default)]
 pub struct AppState {
-    pub bhx_service: Arc<Mutex<BachHoaXanhService>>,
+    pub bhx_service: Mutex<BachHoaXanhService>,
+    pub google_sheet_service: Mutex<GoogleSheetsService>,
+
 }
