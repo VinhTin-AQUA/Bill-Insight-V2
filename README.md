@@ -1,9 +1,11 @@
 # 💸 Bill Insight — Smart Invoice Management on Google Sheets
 
-<img src="https://img.shields.io/badge/Built%20with-Tauri-orange?logo=rust&style=flat-square" width="150"/>
-<img src="https://img.shields.io/badge/Frontend-Angular-red?logo=angular&style=flat-square" width="150"/>
-<img src="https://img.shields.io/badge/Style-TailwindCSS-38B2AC?logo=tailwindcss&style=flat-square" width="150"/>
-<img src="https://img.shields.io/badge/API-Google%20Sheets-blue?logo=google&style=flat-square" width="150"/>
+<div>
+    <img src="https://img.shields.io/badge/Built%20with-Tauri-orange?logo=rust&style=for-the-badge" />
+    <img src="https://img.shields.io/badge/Frontend-Angular-red?logo=angular&style=for-the-badge" />
+    <img src="https://img.shields.io/badge/Style-TailwindCSS-38B2AC?logo=tailwindcss&style=for-the-badge" />
+    <img src="https://img.shields.io/badge/API-Google%20Sheets-blue?logo=google&style=for-the-badge" />
+</div>
 
 ---
 
@@ -26,49 +28,52 @@ The app works entirely **without a centralized server**, keeping all data on **y
 ✅ **Rename your Google Sheet** easily  
 ✅ **Multi-language support** in settings  
 ✅ **No centralized database** — 100% local + Google Sheets  
-✅ **Internet required only for Google API access**  
+✅ **Internet required only for Google API access**
 
 ---
 
 ## 🧰 Tech Stack
 
-| Component | Technology |
-|------------|-------------|
-| Core Framework | [Tauri](https://tauri.app/) + Rust 🦀 |
-| Frontend | [Angular](https://angular.dev/) ⚡ |
-| Styling | [TailwindCSS](https://tailwindcss.com/) 🎨 |
-| Data Sync | [Google Sheets API](https://developers.google.com/sheets/api) 📊 |
+| Component      | Technology                                                       |
+| -------------- | ---------------------------------------------------------------- |
+| Core Framework | [Tauri](https://tauri.app/) + Rust 🦀                            |
+| Frontend       | [Angular](https://angular.dev/) ⚡                               |
+| Styling        | [TailwindCSS](https://tailwindcss.com/) 🎨                       |
+| Data Sync      | [Google Sheets API](https://developers.google.com/sheets/api) 📊 |
 
 ---
 
 ## 🛠️ Google API Setup Guide
 
 ### 1️⃣ Create a Project in Google Cloud Console
-1. Go to [Google Cloud Console](https://console.cloud.google.com/).  
-2. Create a **new project** (e.g., `Bill Insight`).  
-3. Enable **Google Sheets API**:  
-   - Navigate to `APIs & Services` → `Library` → search for **Google Sheets API** → **Enable**.
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a **new project** (e.g., `Bill Insight`).
+3. Enable **Google Sheets API**:
+    - Navigate to `APIs & Services` → `Library` → search for **Google Sheets API** → **Enable**.
 
 ### 2️⃣ Create a Service Account
-1. Go to `APIs & Services` → `Credentials` → **Create credentials** → select **Service Account**.  
-2. Enter a name and create → under the `Keys` section, choose **Add Key → Create new key → JSON**.  
-3. Download the **`service_account.json`** file and place it in your app’s config directory.  
 
-> ⚠️ **Important Notes:**  
-> - Keep your `service_account.json` file **private** — never share it publicly.  
-> - Share **edit permissions** on your Google Sheet file with your Service Account’s email address (found inside the JSON file).
+1. Go to `APIs & Services` → `Credentials` → **Create credentials** → select **Service Account**.
+2. Enter a name and create → under the `Keys` section, choose **Add Key → Create new key → JSON**.
+3. Download the **`service_account.json`** file and place it in your app’s config directory.
+
+> ⚠️ **Important Notes:**
+>
+> -   Keep your `service_account.json` file **private** — never share it publicly.
+> -   Share **edit permissions** on your Google Sheet file with your Service Account’s email address (found inside the JSON file).
 
 ---
 
 ## ⚙️ Initial Setup in Bill Insight
 
-1. Launch **Bill Insight**  
-2. On first setup, **select your `service_account.json`** file  
-3. The app will automatically authenticate and connect to your Google Sheet  
+1. Launch **Bill Insight**
+2. On first setup, **select your `service_account.json`** file
+3. The app will automatically authenticate and connect to your Google Sheet
 4. Configure your preferences:
-   - 🌐 Language  
-   - 🗂️ Sheet name  
-   - 📊 Display mode for invoice statistics  
+    - 🌐 Language
+    - 🗂️ Sheet name
+    - 📊 Display mode for invoice statistics
 
 You’re now ready to start tracking your invoices effortlessly! 🚀
 
@@ -90,17 +95,17 @@ You’re now ready to start tracking your invoices effortlessly! 🚀
   ⚙️ <b>Settings</b>
 </p>
 
-
 ---
 
 ## 🔒 Privacy-First Design
 
 Bill Insight **never stores or transmits personal data** to any server.  
 All data is:
-- Stored **locally on your device**  
-- Synced **only with your personal Google Sheet**  
-- Never shared with third parties  
-- [SpreadSheet template](./docs/template.xlsx)
+
+-   Stored **locally on your device**
+-   Synced **only with your personal Google Sheet**
+-   Never shared with third parties
+-   [SpreadSheet template](./docs/template.xlsx)
 
 ---
 
@@ -110,13 +115,13 @@ All data is:
 ✨ Automatic expense category suggestions  
 ✨ Monthly summary report export (PDF)  
 ✨ Cross-device sync support  
-✨ Dark Mode interface  
+✨ Dark Mode interface
 
 ---
 
 ## 🧑‍💻 Author
 
-👤 **[Newtun**  
+👤 **Newtun**  
 📧 Email: tinhovinh@gmail.com  
 🌐 GitHub: [https://github.com/VinhTin-AQUA](https://github.com/VinhTin-AQUA)
 
