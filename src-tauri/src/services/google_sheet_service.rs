@@ -9,6 +9,8 @@ use std::string::ToString;
 use reqwest::Client;
 use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
 use anyhow::anyhow;
+use chrono::NaiveDate;
+use std::cmp::Reverse;
 
 pub struct GoogleSheetsService {
     pub client: Client,
@@ -303,15 +305,13 @@ impl GoogleSheetsService {
             .collect();
 
         // Sắp xếp theo ngày (nếu muốn)
-        result.sort_by(|a, b| a.date.cmp(&b.date));
+        
+        result.sort_by_key(|item| {
+            let d = NaiveDate::parse_from_str(item.date.trim(), "%d/%m/%Y")
+                .unwrap_or_else(|_| NaiveDate::from_ymd_opt(0, 1, 1).unwrap());
+            Reverse(d)
+        });
 
         result
     }
 }
-
-
-
-/* private methods */
-
-
-

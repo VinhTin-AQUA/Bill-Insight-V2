@@ -37,8 +37,9 @@ export class Config {
 
     ngOnInit() {
         try {
-            this.init();
+            this.init(); 
             this.initForm();
+            this.initial.set(true);
         } catch (e) {
             alert(e);
         }
