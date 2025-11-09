@@ -1,11 +1,36 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { LanguageService } from '../../shared/services/language-service';
+import { StoreHelper } from '../../shared/helpers/store-helper';
+import { SettingKeys } from '../../core/enums/setting-keys';
+import {TranslatePipe} from "@ngx-translate/core";
 
 @Component({
-  selector: 'app-settings',
-  imports: [],
-  templateUrl: './settings.html',
-  styleUrl: './settings.scss',
+    selector: 'app-settings',
+    imports: [CommonModule, TranslatePipe],
+    templateUrl: './settings.html',
+    styleUrl: './settings.scss',
 })
 export class Settings {
+    selectedLanguage = 'en';
+    selectedTheme = 'light';
 
+    languages: LanguageOption[] = LanguageService.LANGUAGES;
+
+    themes: ThemeOption[] = [
+        { value: 'light', label: 'Light', icon: '🌞' },
+        { value: 'dark', label: 'Dark', icon: '🌙' },
+    ];
+
+    constructor(private languageService: LanguageService) {}
+
+    async changeLanguage(code: string) {
+        this.selectedLanguage = code;
+        await StoreHelper.setValue(SettingKeys.language, code);
+        this.languageService.use(code)
+    }
+
+    async changeTheme(theme: string) {
+
+    }
 }

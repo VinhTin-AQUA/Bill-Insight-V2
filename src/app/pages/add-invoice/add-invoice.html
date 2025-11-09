@@ -1,15 +1,14 @@
-<div class="space-y-4 bg-gray-50 rounded-2xl shadow-sm">
+<div class="space-y-2 bg-gray-50 rounded-2xl shadow-sm">
     <!-- 🔍 Tra cứu hóa đơn -->
     <section
         class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition"
     >
         <header class="mb-5">
             <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <i class="fa-solid fa-file-invoice text-green-600"></i>
-                Tra cứu hóa đơn
+                {{ 'findInvoice' | translate }}
             </h2>
             <p class="text-sm text-gray-500 mt-1">
-                Nhập thông tin mã hóa đơn và Captcha để tra cứu nhanh.
+                {{ 'inputInvoiceCodeAndCaptchaToFind' | translate }}
             </p>
         </header>
 
@@ -23,7 +22,6 @@
             <button
                 (click)="loadCaptcha()"
                 class="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition text-gray-600"
-                title="Tải lại Captcha"
             >
                 <fa-icon [icon]="faArrowsRotate"></fa-icon>
             </button>
@@ -34,22 +32,24 @@
             <input
                 type="text"
                 [(ngModel)]="captchaInput"
-                placeholder="Nhập mã Captcha"
+                [placeholder]="'inputCaptcha' | translate"
                 class="input-modern"
             />
             <input
                 type="text"
                 [(ngModel)]="invoiceCode"
-                placeholder="Mã hóa đơn"
+                [placeholder]="'inputInvoiceCode' | translate"
                 class="input-modern"
             />
             <input
                 type="text"
                 [(ngModel)]="invoiceCT"
-                placeholder="Mã CT"
+                [placeholder]="'inputCTCode' | translate"
                 class="input-modern sm:col-span-2"
             />
-            <button (click)="getInvoiceInfo()" class="btn-primary sm:col-span-2">Tra cứu</button>
+            <button (click)="getInvoiceInfo()" class="btn-primary sm:col-span-2">
+                {{ 'find' | translate }}
+            </button>
         </div>
     </section>
 
@@ -59,31 +59,31 @@
     >
         <header class="flex items-center gap-2 mb-4">
             <i class="fa-solid fa-store text-green-600"></i>
-            <h2 class="text-lg font-semibold text-gray-800">Người bán</h2>
+            <h2 class="text-lg font-semibold text-gray-800">{{ 'seller' | translate }}</h2>
         </header>
 
         <div class="grid gap-3">
             <div class="info-card">
-                <label>Đơn vị: </label>
+                <label>{{ 'unit' | translate }}: </label>
                 <span>{{ nban().ten }}</span>
             </div>
             <div class="info-card">
-                <label>Mã số thuế: </label>
+                <label>{{ 'taxCode' | translate }}: </label>
                 <span>{{ nban().mst }}</span>
             </div>
             <div class="info-card">
-                <label>Địa chỉ: </label>
+                <label>{{ 'address' | translate }}: </label>
                 <span>{{ nban().d_chi }}</span>
             </div>
             <div class="info-card">
-                <label>Điện thoại: </label>
+                <label>{{ 'phoneNumber' | translate }}: </label>
                 <span>{{ nban().sdt }}</span>
             </div>
         </div>
 
         <div class="mt-6">
             <h3 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <i class="fa-solid fa-code-branch text-emerald-500"></i> Chi nhánh
+                <i class="fa-solid fa-code-branch text-emerald-500"></i> {{ 'branch' | translate }}
             </h3>
             <div class="grid gap-2">
                 @for (tt_khac of nban().tt_khac; track $index) {
@@ -102,8 +102,7 @@
     >
         <header class="flex items-center justify-between mb-5">
             <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <i class="fa-solid fa-cart-shopping text-indigo-600"></i>
-                Danh sách hàng hóa trong hóa đơn
+                {{ 'listProducts' | translate }}
             </h2>
         </header>
 
@@ -123,7 +122,7 @@
                         type="number"
                         [(ngModel)]="item.th_tien_sau_lai_suat"
                         class="input-modern col-span-2"
-                        placeholder="Giá"
+                        placeholder="0"
                         (input)="onInvoiceInput($event, item)"
                     />
                     <button (click)="removeInvoiceItem(item.id)" class="btn-danger">
@@ -135,7 +134,7 @@
         </div>
 
         <button (click)="addInvoiceItem()" class="btn-success">
-            <fa-icon [icon]="faCirclePlus"></fa-icon> Thêm hàng hóa
+            <fa-icon [icon]="faCirclePlus"></fa-icon> {{ 'addProduct' | translate }}
         </button>
     </section>
 
@@ -146,7 +145,7 @@
         <header class="flex items-center justify-between mb-5">
             <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
                 <i class="fa-solid fa-basket-shopping text-emerald-600"></i>
-                Hàng hóa mua ngoài hóa đơn
+                {{ 'listOtheProducts' | translate }}
             </h2>
         </header>
 
@@ -178,7 +177,7 @@
         </div>
 
         <button (click)="addExtraItem()" class="btn-success">
-            <fa-icon [icon]="faCirclePlus"></fa-icon> Thêm hàng ngoài hóa đơn
+            <fa-icon [icon]="faCirclePlus"></fa-icon> {{ 'addOtherProduct' | translate }}
         </button>
     </section>
 
@@ -191,7 +190,7 @@
             <div>
                 <label class="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                     <i class="fa-regular fa-calendar text-blue-500"></i>
-                    Ngày hóa đơn
+                    {{ 'invoiceDate' | translate }}
                 </label>
                 <input type="date" [(ngModel)]="invoiceDate" class="input-modern" />
             </div>
@@ -199,13 +198,13 @@
             <!-- Tổng cộng -->
             <div class="summary-card">
                 <div class="flex justify-between text-sm mb-2">
-                    <span>Tổng cộng (chưa thuế):</span>
+                    <span> {{ 'totalWitoutTax' | translate }}:</span>
                     <span class="font-medium text-gray-800">
                         {{ ttoan().tg_tc_thue | number }}
                     </span>
                 </div>
                 <div class="flex justify-between text-sm mb-2">
-                    <span>Thuế (VAT):</span>
+                    <span>{{ 'tax' | translate }} :</span>
                     <span class="font-medium text-gray-800">
                         {{ ttoan().tg_t_thue | number }}
                     </span>
@@ -213,21 +212,21 @@
                 <div
                     class="flex justify-between font-semibold text-lg text-gray-900 border-t border-gray-200 pt-2"
                 >
-                    <span>Tổng thanh toán:</span>
+                    <span>{{ 'totalpayment' | translate }}:</span>
                     <span class="text-green-600">
                         {{ ttoan().tg_tt_tb_so | number }}
                     </span>
                 </div>
                 <p class="text-sm italic text-gray-500 mt-2">
                     <i class="fa-solid fa-quote-left text-gray-400 mr-1"></i>
-                    Bằng chữ: {{ ttoan().tg_tt_tb_chu }}
+                    {{ 'totalPaymentInWords' | translate }}: {{ ttoan().tg_tt_tb_chu }}
                 </p>
             </div>
         </div>
 
         <div class="mt-6">
             <button (click)="saveInvoice()" class="btn-primary w-full">
-                <i class="fa-solid fa-save mr-2"></i> Lưu hóa đơn
+                <i class="fa-solid fa-save mr-2"></i> {{ 'saveInvoice' | translate }}
             </button>
         </div>
     </section>

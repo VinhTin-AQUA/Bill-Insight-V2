@@ -15,10 +15,11 @@ import { DialogService } from '../../shared/services/dialog-service';
 import { ResponseCommad } from '../../shared/models/response-command';
 import { SpreadsheetConfigStore } from '../../shared/stores/config-store';
 import { FileHelper } from '../../shared/helpers/file-helper';
+import {TranslatePipe} from "@ngx-translate/core";
 
 @Component({
     selector: 'app-add-invoice',
-    imports: [FormsModule, DecimalPipe, FontAwesomeModule],
+    imports: [FormsModule, DecimalPipe, FontAwesomeModule, TranslatePipe],
     templateUrl: './add-invoice.html',
     styleUrl: './add-invoice.scss',
 })

@@ -99,11 +99,7 @@ impl HHDVu {
 }
 
 fn parse_percentage(input: &str) -> f64 {
-    input
-        .trim_end_matches('%')
-        .parse::<f64>()
-        .unwrap_or(0.0)
-        / 100.0
+    input.trim_end_matches('%').parse::<f64>().unwrap_or(0.0) / 100.0
 }
 
 /// Tương đương với `LTSuat`
@@ -136,5 +132,5 @@ pub struct CookieModel {
 pub struct ReadXmlDataResult {
     pub nban: NBan,
     pub hhdvus: Vec<HHDVu>,
-    pub ttoan:TToan,
+    pub ttoan: TToan,
 }

@@ -9,7 +9,7 @@
     <div class="pb-6 border-b border-gray-200">
         <div class="flex items-center gap-2 mb-5">
             <i class="fa-solid fa-file-excel text-blue-500 text-xl"></i>
-            <h2 class="text-xl font-semibold text-gray-800">Thông tin Spreadsheet</h2>
+            <h2 class="text-xl font-semibold text-gray-800">{{ 'spreadSheetInfo' | translate }}</h2>
         </div>
 
         <form [formGroup]="configForm">
@@ -66,7 +66,7 @@
             <div class="mt-5">
                 <button (click)="saveConfig()" class="btn-primary">
                     <i class="fa-solid fa-floppy-disk"></i>
-                    Lưu cấu hình
+                    {{ 'saveConfig' | translate }}
                 </button>
             </div>
         </form>
@@ -77,11 +77,11 @@
         <div class="flex justify-between items-center mb-5">
             <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                 <i class="fa-solid fa-table text-green-500"></i>
-                Danh sách Sheet
+                {{ 'listSheets' | translate }}
             </h2>
             <button (click)="openModal(true)" class="btn-primary">
                 <i class="fa-solid fa-plus"></i>
-                Thêm Sheet
+                {{ 'addSheet' | translate }}
             </button>
         </div>
 
@@ -90,9 +90,13 @@
                 <thead class="bg-gray-100 text-gray-700">
                     <tr>
                         <th class="px-4 py-2 font-medium">#</th>
-                        <th class="px-4 py-2 font-medium">Tên Sheet</th>
-                        <th class="px-4 py-2 font-medium text-center">Working Sheet</th>
-                        <th class="px-4 py-2 font-medium text-center">Working Sheet</th>
+                        <th class="px-4 py-2 font-medium">{{ 'sheetName' | translate }}</th>
+                        <th class="px-4 py-2 font-medium text-center">
+                            {{ 'workingSheet' | translate }}
+                        </th>
+                        <th class="px-4 py-2 font-medium text-center">
+                            {{ 'action' | translate }}
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -139,7 +143,7 @@
         <div class="mt-5">
             <button (click)="saveWorkingSheet()" class="btn-primary">
                 <i class="fa-solid fa-check"></i>
-                Lưu Working Sheet
+                {{ 'saveWorkingSheet' | translate }}
             </button>
         </div>
     </div>
@@ -156,7 +160,9 @@
             <div
                 class="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200"
             >
-                <h3 class="text-xl font-semibold text-gray-900">Nhập tên sheet</h3>
+                <h3 class="text-xl font-semibold text-gray-900">
+                    {{ 'inputSheetName' | translate }}
+                </h3>
                 <button
                     (click)="openModal(false)"
                     type="button"
@@ -185,9 +191,9 @@
             <!-- Modal body -->
             <div class="p-5">
                 <div class="mb-3">
-                    <label for="email" class="block mb-2 text-sm font-medium text-gray-900"
-                        >Tên sheet</label
-                    >
+                    <label for="email" class="block mb-2 text-sm font-medium text-gray-900">{{
+                        'sheetName' | translate
+                    }}</label>
                     <input
                         [(ngModel)]="newSheetName"
                         type="text"
@@ -197,7 +203,9 @@
                     />
                 </div>
 
-                <button (click)="addSheet()" type="submit" class="btn-primary">Thêm sheet</button>
+                <button (click)="addSheet()" type="submit" class="btn-primary">
+                    {{ 'addSheet' | translate }}
+                </button>
             </div>
         </div>
     </div>
@@ -213,7 +221,7 @@
             <div
                 class="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200"
             >
-                <h3 class="text-xl font-semibold text-gray-900">Tên sheet mới</h3>
+                <h3 class="text-xl font-semibold text-gray-900">{{ 'addSheet' | translate }}</h3>
                 <button
                     (click)="onOpenUpdateSheetNameModal(null)"
                     type="button"
@@ -241,9 +249,9 @@
             <!-- Modal body -->
             <div class="p-5">
                 <div class="mb-3">
-                    <label for="email" class="block mb-2 text-sm font-medium text-gray-900"
-                        >Tên sheet</label
-                    >
+                    <label for="email" class="block mb-2 text-sm font-medium text-gray-900">{{
+                        'sheetName' | translate
+                    }}</label>
                     @if(updateSheet) {
                     <input
                         [(ngModel)]="updateSheet.title"
@@ -258,7 +266,7 @@
                 </div>
 
                 <button (click)="updateSheetName()" type="submit" class="btn-primary">
-                    Update sheet
+                    {{ 'updateSheet' | translate }}
                 </button>
             </div>
         </div>

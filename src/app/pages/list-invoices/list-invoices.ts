@@ -3,10 +3,11 @@ import { InvoiceItem, ListInvoiceItems } from './models/invoice-item';
 import { DecimalPipe } from '@angular/common';
 import { TauriCommandSerivce } from '../../shared/services/tauri/tauri-command-service';
 import { SpreadsheetConfigStore } from '../../shared/stores/config-store';
+import {TranslatePipe} from "@ngx-translate/core";
 
 @Component({
     selector: 'app-list-invoices',
-    imports: [DecimalPipe],
+    imports: [DecimalPipe, TranslatePipe],
     templateUrl: './list-invoices.html',
     styleUrl: './list-invoices.scss',
 })

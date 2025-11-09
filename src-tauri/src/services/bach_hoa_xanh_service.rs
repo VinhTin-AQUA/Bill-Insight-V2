@@ -1,14 +1,14 @@
+use anyhow::anyhow;
+use regex::Regex;
+use reqwest::Client;
+use reqwest_cookie_store::{CookieStore, CookieStoreMutex};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
-use anyhow::anyhow;
-use reqwest::{Client};
-use reqwest_cookie_store::{CookieStoreMutex, CookieStore};
-use regex::Regex;
 use tokio::io::AsyncWriteExt;
 
-use crate::models::{CookieModel, NBan, HHDVu, TToan, TTKhac, LTSuat, ReadXmlDataResult};
+use crate::models::{CookieModel, HHDVu, LTSuat, NBan, ReadXmlDataResult, TTKhac, TToan};
 
 pub struct BachHoaXanhService {
     client: Client,
@@ -31,7 +31,10 @@ impl BachHoaXanhService {
         }
     }
 
-    pub async fn get_captcha_and_asp_session(&self, folder: String) -> anyhow::Result<Option<CookieModel>> {
+    pub async fn get_captcha_and_asp_session(
+        &self,
+        folder: String,
+    ) -> anyhow::Result<Option<CookieModel>> {
         let (sv_id, prefix) = self.get_prefix_and_svid().await?;
         if sv_id.is_none() || prefix.is_none() {
             return Err(anyhow!("Vui lòng đợi và thử lại trong vài giây"));
@@ -40,7 +43,9 @@ impl BachHoaXanhService {
         let sv_id = sv_id.unwrap();
         let prefix = prefix.unwrap();
         let url = format!("{}/home/getcaptchaimage?prefix={}", self.api_url, prefix);
-        let bytes = self.client.get(&url)
+        let bytes = self
+            .client
+            .get(&url)
             .header("cookie", format!("SvID={}", sv_id))
             .send()
             .await?
@@ -54,7 +59,10 @@ impl BachHoaXanhService {
 
         // Lấy cookie ASP.NET_SessionId
         let asp_session = {
-            let store = self.cookie_store.lock().expect("Failed to lock cookie_store");
+            let store = self
+                .cookie_store
+                .lock()
+                .expect("Failed to lock cookie_store");
             // Sao chép cookie ra Vec để tránh lifetime issue
             let cookies: Vec<_> = store.iter_any().map(|c| c.clone()).collect();
 
@@ -65,7 +73,7 @@ impl BachHoaXanhService {
                 .unwrap_or_default()
         };
 
-        let cookie:CookieModel = CookieModel {
+        let cookie: CookieModel = CookieModel {
             sv_id,
             aspnet_session_id: asp_session,
             captcha_path: captcha_path.display().to_string(),
@@ -80,15 +88,26 @@ impl BachHoaXanhService {
         captcha: &str,
         phone: &str,
         invoice_num: &str,
-        folder: &str
+        folder: &str,
     ) -> anyhow::Result<Option<ReadXmlDataResult>> {
         let url = format!("{}/Home/ListInvoice", self.api_url);
-        let body = format!("phone={}&invoiceNum={}&captcha={}", phone, invoice_num, captcha);
+        let body = format!(
+            "phone={}&invoiceNum={}&captcha={}",
+            phone, invoice_num, captcha
+        );
 
-        let resp = self.client.post(&url)
-            .header("cookie", format!("SvID={}; ASP.NET_SessionId={}", sv_id, asp_session))
+        let resp = self
+            .client
+            .post(&url)
+            .header(
+                "cookie",
+                format!("SvID={}; ASP.NET_SessionId={}", sv_id, asp_session),
+            )
             .header("x-requested-with", "XMLHttpRequest")
-            .header("content-type", "application/x-www-form-urlencoded; charset=UTF-8")
+            .header(
+                "content-type",
+                "application/x-www-form-urlencoded; charset=UTF-8",
+            )
             .body(body)
             .send()
             .await?
@@ -201,7 +220,15 @@ impl BachHoaXanhService {
                 let sl = get("SLuong").parse::<i32>().unwrap_or(0);
                 let dg = get("DGia").parse::<f64>().unwrap_or(0.0);
                 let tt = get("ThTien").parse::<f64>().unwrap_or(0.0);
-                HHDVu::new(&get("MHHDVu"), &get("THHDVu"), &get("DVTinh"), sl, dg, tt, &get("TSuat"))
+                HHDVu::new(
+                    &get("MHHDVu"),
+                    &get("THHDVu"),
+                    &get("DVTinh"),
+                    sl,
+                    dg,
+                    tt,
+                    &get("TSuat"),
+                )
             })
             .collect();
 
@@ -240,9 +267,15 @@ impl BachHoaXanhService {
 
         let ttoan = TToan {
             t_httl_t_suat,
-            tg_tc_thue: Self::get_text(&ttoan_node, "TgTCThue").parse().unwrap_or(0.0),
-            tg_t_thue: Self::get_text(&ttoan_node, "TgTThue").parse().unwrap_or(0.0),
-            tg_tt_tb_so: Self::get_text(&ttoan_node, "TgTTTBSo").parse().unwrap_or(0.0),
+            tg_tc_thue: Self::get_text(&ttoan_node, "TgTCThue")
+                .parse()
+                .unwrap_or(0.0),
+            tg_t_thue: Self::get_text(&ttoan_node, "TgTThue")
+                .parse()
+                .unwrap_or(0.0),
+            tg_tt_tb_so: Self::get_text(&ttoan_node, "TgTTTBSo")
+                .parse()
+                .unwrap_or(0.0),
             tg_tt_tb_chu: Self::get_text(&ttoan_node, "TgTTTBChu"),
             tt_khac: ttoan_node
                 .descendants()
@@ -256,9 +289,9 @@ impl BachHoaXanhService {
         };
 
         Ok(ReadXmlDataResult {
-            nban:nban,
+            nban: nban,
             hhdvus: hhdvu_list,
-            ttoan: ttoan
+            ttoan: ttoan,
         })
     }
 
@@ -268,8 +301,10 @@ impl BachHoaXanhService {
 
         println!("resp {:#?}", resp);
 
-
-        let cookies = resp.cookies().map(|c| (c.name().to_string(), c.value().to_string())).collect::<HashMap<_, _>>();
+        let cookies = resp
+            .cookies()
+            .map(|c| (c.name().to_string(), c.value().to_string()))
+            .collect::<HashMap<_, _>>();
 
         println!("cookies {:#?}", cookies);
 
@@ -277,23 +312,21 @@ impl BachHoaXanhService {
 
         println!("svid {:#?}", svid);
 
-
         let html = resp.text().await?;
 
         println!("html {:#?}", html);
 
-
-
         let re = Regex::new(r#"<img\s+[^>]*src="/home/getcaptchaimage\?prefix=(\d+)""#)?;
         let prefix = re.captures(&html).map(|c| c[1].to_string());
 
-         println!("prefix {:#?}", prefix);
+        println!("prefix {:#?}", prefix);
 
         Ok((svid, prefix))
     }
 
     fn get_urls(html: &str) -> anyhow::Result<(String, String, String)> {
-        let re = Regex::new(r#"<a[^>]*href="([^"]+)"[^>]*>\s*(XEM|Tải HĐ chuyển đổi|TẢI XML)\s*</a>"#)?;
+        let re =
+            Regex::new(r#"<a[^>]*href="([^"]+)"[^>]*>\s*(XEM|Tải HĐ chuyển đổi|TẢI XML)\s*</a>"#)?;
         let mut urls = vec![];
         for cap in re.captures_iter(html) {
             urls.push(cap[1].to_string());
@@ -320,5 +353,4 @@ impl BachHoaXanhService {
         store.clear();
         println!("Đã xóa toàn bộ cookie!");
     }
-
 }

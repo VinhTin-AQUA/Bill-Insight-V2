@@ -2,10 +2,11 @@ import { Component } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NavItem } from './models/nav-item';
 import { filter } from 'rxjs';
+import {TranslatePipe} from "@ngx-translate/core";
 
 @Component({
     selector: 'app-main-layout',
-    imports: [RouterOutlet, RouterLink, RouterLinkActive],
+    imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe],
     templateUrl: './main-layout.html',
     styleUrl: './main-layout.scss',
 })
@@ -19,23 +20,23 @@ export class MainLayout {
     ngOnInit() {
         this.navItems = [
             {
-                name: 'Home',
+                name: 'menuSidebar.home',
                 url: '/main/home',
             },
             {
-                name: 'Invoices',
+                name: 'menuSidebar.invoices',
                 url: '/main/invoices',
             },
             {
-                name: 'Add Invoice',
+                name: 'menuSidebar.addInvoice',
                 url: '/main/add-invoice',
             },
             {
-                name: 'Config',
+                name: 'menuSidebar.configDetails',
                 url: '/main/config-details',
             },
             {
-                name: 'Settings',
+                name: 'menuSidebar.settings',
                 url: '/main/settings',
             },
         ];

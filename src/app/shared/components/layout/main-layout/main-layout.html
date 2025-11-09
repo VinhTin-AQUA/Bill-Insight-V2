@@ -22,7 +22,7 @@
                 </svg>
             </button>
 
-            <h1 class="text-xl font-semibold text-gray-800">Bill Insight</h1>
+            <h1 class="text-xl font-semibold text-gray-800">{{ 'app.title' | translate }}</h1>
         </div>
 
         <!-- Optional user / profile -->
@@ -97,7 +97,7 @@
                     [routerLinkActiveOptions]="{ exact: true }"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
                 >
-                    <span>{{ item.name }}</span>
+                    <span>{{ item.name | translate }}</span>
                 </a>
             </li>
             }

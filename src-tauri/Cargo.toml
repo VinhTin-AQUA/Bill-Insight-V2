@@ -36,3 +36,4 @@ jsonwebtoken = { version = "10", features = ["rust_crypto"] }
 urlencoding = "2"
 anyhow = "1"
 chrono = "0.4"
+tauri-plugin-store = "2"

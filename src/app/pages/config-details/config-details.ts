@@ -22,10 +22,11 @@ import { FileHelper } from '../../shared/helpers/file-helper';
 import { SpreadsheetConfigStore } from '../../shared/stores/config-store';
 import { SheetInfo } from './models/sheet-info';
 import { DialogService } from '../../shared/services/dialog-service';
+import {TranslatePipe} from "@ngx-translate/core";
 
 @Component({
     selector: 'app-config-details',
-    imports: [FormsModule, CommonModule, ReactiveFormsModule],
+    imports: [FormsModule, CommonModule, ReactiveFormsModule, TranslatePipe],
     templateUrl: './config-details.html',
     styleUrl: './config-details.scss',
 })

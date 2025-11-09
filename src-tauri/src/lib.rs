@@ -1,4 +1,4 @@
-use std::sync::{Arc};
+use std::sync::Arc;
 
 mod commands;
 mod helpers;
@@ -14,13 +14,13 @@ use tokio::sync::Mutex;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-
     let state = Mutex::new(AppState {
         bhx_service: Mutex::new(BachHoaXanhService::new()),
         google_sheet_service: Mutex::new(GoogleSheetsService::new()),
     });
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_fs::init())
         .setup(|app| {
             if cfg!(debug_assertions) {

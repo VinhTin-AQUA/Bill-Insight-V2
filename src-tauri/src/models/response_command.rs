@@ -4,5 +4,5 @@ use serde::{Deserialize, Serialize};
 pub struct ResponseCommand {
     pub title: String,
     pub message: String,
-    pub is_success: bool
+    pub is_success: bool,
 }

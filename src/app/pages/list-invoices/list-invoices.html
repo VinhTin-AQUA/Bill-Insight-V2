@@ -9,7 +9,7 @@
             (click)="toggleGroup(group)"
         >
             <div class="flex items-center gap-3">
-                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Đã chốt"></div>
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                 <h2 class="text-base font-semibold text-gray-800">
                     {{ group.date }}
                 </h2>
@@ -17,7 +17,7 @@
 
             <div class="flex items-center gap-2">
                 <span class="text-sm text-gray-500 font-medium">
-                    {{ group.items.length }} sản phẩm
+                    {{ group.items.length }} {{ 'product' | translate }}
                 </span>
 
                 <!-- Mũi tên xoay khi mở -->
@@ -52,13 +52,13 @@
                         <p class="font-medium text-gray-800">{{ product.name }}</p>
                         <div class="text-sm text-gray-600 mt-1 space-y-0.5">
                             <p>
-                                💵 Tiền mặt:
+                                💵 {{ 'cash' | translate }}:
                                 <span class="font-medium text-gray-800">
                                     {{ product.cash_price | number }}₫
                                 </span>
                             </p>
                             <p>
-                                🏦 Ngân hàng:
+                                🏦 {{ 'bank' | translate }}:
                                 <span class="font-medium text-gray-800">
                                     {{ product.bank_price | number }}₫
                                 </span>
@@ -75,11 +75,11 @@
             class="flex justify-between items-center px-5 py-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-b-2xl text-sm text-gray-700"
         >
             <div>
-                <p class="font-semibold text-green-700">Tổng tiền mặt</p>
+                <p class="font-semibold text-green-700">{{ 'totalCash' | translate }}</p>
                 <p class="text-gray-800">{{ getTotalCash(group.items) | number }}₫</p>
             </div>
             <div>
-                <p class="font-semibold text-blue-700">Tổng ngân hàng</p>
+                <p class="font-semibold text-blue-700">{{ 'totalBank' | translate }}</p>
                 <p class="text-gray-800">{{ getTotalBank(group.items) | number }}₫</p>
             </div>
         </div>
