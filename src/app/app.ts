@@ -13,6 +13,7 @@ import { SpreadsheetConfigModel } from './shared/models/spreadsheet_config';
 import { SpreadsheetConfigStore } from './shared/stores/config-store';
 import { LanguageService } from './shared/services/language-service';
 import { StoreHelper } from './shared/helpers/store-helper';
+import { SettingKeys } from './core/enums/setting-keys';
 
 @Component({
     selector: 'app-root',
@@ -28,8 +29,10 @@ export class App {
 
     ngOnInit() {
         this.checkConfig();
-        StoreHelper.init();
+        this.init();
     }
+
+    ngAfterViewInit() {}
 
     private async checkConfig(): Promise<boolean> {
         const credentialFolder = await AppFolderHelper.getFolderPath(EAppFolderNames.CredentialDir);
@@ -52,5 +55,19 @@ export class App {
         }
 
         return credentialPathExists && configPathExists;
+    }
+
+    private async init() {
+        console.log(123);
+
+        await StoreHelper.init();
+
+        const code = await StoreHelper.getValue<string>(SettingKeys.language);
+        console.log(code);
+
+        if (!code) {
+            return;
+        }
+        this.languageService.use(code);
     }
 }
