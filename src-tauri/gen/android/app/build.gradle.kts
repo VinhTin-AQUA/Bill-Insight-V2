@@ -52,7 +52,6 @@ android {
         buildConfig = true
     }
 
-    // Cấu hình chữ ký cho bản release
     signingConfigs {
         create("release") {
             storeFile = file("newtun-release-key.keystore")

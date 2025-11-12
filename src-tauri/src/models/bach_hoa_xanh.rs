@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-/// Tương đương với `InvoiceModel` trong C#
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct InvoiceModel {
     pub ma_hd: String,
@@ -11,7 +10,6 @@ pub struct InvoiceModel {
     pub captcha_path: String,
 }
 
-/// Tương đương với `TTKhac`
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct TTKhac {
     pub t_truong: String,
@@ -19,7 +17,6 @@ pub struct TTKhac {
     pub d_lieu: String,
 }
 
-/// Tương đương với `NBan`
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct NBan {
     pub ten: String,
@@ -41,7 +38,6 @@ impl NBan {
     }
 }
 
-/// Tương đương với `HHDVu`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HHDVu {
     pub id: String,
@@ -102,7 +98,6 @@ fn parse_percentage(input: &str) -> f64 {
     input.trim_end_matches('%').parse::<f64>().unwrap_or(0.0) / 100.0
 }
 
-/// Tương đương với `LTSuat`
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct LTSuat {
     pub t_suat: String,
@@ -110,7 +105,6 @@ pub struct LTSuat {
     pub t_thue: f64,
 }
 
-/// Tương đương với `TToan`
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct TToan {
     pub t_httl_t_suat: Vec<LTSuat>,

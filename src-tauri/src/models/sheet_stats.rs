@@ -24,7 +24,7 @@ pub struct Sheet {
 #[derive(Deserialize, Debug)]
 pub struct SheetProperties {
     #[serde(rename = "sheetId")]
-    pub sheet_id: i64, // ánh xạ với "sheetId" trong JSON
+    pub sheet_id: i64,
     pub title: String,
 }
 

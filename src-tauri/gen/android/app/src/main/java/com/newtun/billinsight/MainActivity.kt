@@ -15,22 +15,17 @@ class MainActivity : TauriActivity() {
     // Allow content to extend under the system bars
     WindowCompat.setDecorFitsSystemWindows(window, false)
 
-    // 1. Lấy windowInsetsController (vẫn cần để quản lý system bars)
     val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
 
-    // 2. Hiển thị cả status bar và navigation bar
     windowInsetsController.apply {
         show(WindowInsetsCompat.Type.systemBars())  // luôn hiển thị
         systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT  // không ẩn tự động
     }
 
-    // 3. Thiết lập màu sắc
     window.statusBarColor = android.graphics.Color.RED  // ví dụ status bar màu đen
     window.navigationBarColor = android.graphics.Color.BLACK  // navigation bar màu đỏ
 
 
-    // 4. Nội dung không che thanh hệ thống
-    // Không cần thay đổi layoutInDisplayCutoutMode nếu bạn không muốn trải ra notch
     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
         window.attributes.layoutInDisplayCutoutMode =
             android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER

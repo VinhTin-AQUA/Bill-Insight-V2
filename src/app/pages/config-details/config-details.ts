@@ -194,8 +194,6 @@ export class ConfigDetails {
             await this.spreadsheetConfigService.saveConfig(configModel);
         }
 
-        // sheets
-
         const sheetInList = this.sheets().find((x) => x.sheet_id === this.updateSheet?.sheet_id);
         if (sheetInList) {
             sheetInList.title = this.updateSheet.title;

@@ -250,15 +250,8 @@ impl GoogleSheetsService {
     /* private methods */
 
     fn get_jwt(json_path: &str) -> anyhow::Result<String> {
-        // Đọc file service_account.json
         let data = fs::read_to_string(json_path)?; // file json được tải ở bước trước trong google console
         let json: ServiceAccount = serde_json::from_str(&data)?;
-
-        // hoặc khởi tạo trực tiếp mà không cần load file json
-        // let json = ServiceAccount {
-        //     client_email: "billinsight@billinsight.iam.gserviceaccount.com".to_string(),
-        //     private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC/zBb37askdccq\nH83cFmVOhNauYixV7UFLks28H1x7CQypw9ZhdbONwVFr5++3vMynsId/E898A1VD\nWVXjjQE5pP2IPrO7CtvNYTLzNHwRgwLbS1NonRiHKoMJEWF3V9BNP7chcYtvd9cl\nJgln0EKK4gQ4j0NHLFPrKcYW7+T7bFSmo0ewxUNyFB+eSYB3xB9UVUvudsy3DC4D\nlpeD6paur+OlZZ1HPAz+Cp/nhDk6qSa7Cvbkt+umDzWahAySgFUJ2CNKPlzCl4Hz\n/BK80ZWOcE5w9cNi9zLs7ydrgoqfdhK0v7MwnkD/6ols9tBLa+oXi/o2xOoqFJRf\nQdxeMnwZAgMBAAECggEAStVUHt8mF982Wsq29Qjt9RFie/7FAq/D+rsoN57a5Ax3\nWuOUyUj1yjjjzmDcCMoK5eC8NUpi+aWJRnJcTyEMmdO0skyYrsGBWmRyzy6qu+Bs\npGiC/j3RPKfLIaYc68Yg+YsDJnLZbyAImy94mv9If0zJTdIj82ipw4b0ia2HH8uK\ndslLmC6uGfyEM+dWysmVX9DDnud5Tgd7+It1e7wqlZW8Fkm8YigvWBl60R2o4gyx\nxqNqmJXzvajGm+Gj6PVvg7rlazekHIUOnG5wGkM6AMGlKAVpaExgRobyQYIIE68J\nQoaa2urBaRdjXWXSL6Ck2vQAX2rdGtWg3xNPoGNnwwKBgQD1hE4pmhQKRaJllRRO\n37Eu/QBe3Kkssx/QTpZITKodNhxQmiFHfQyvtNfwDFQAZ+UPSNyiLN3HVPgXIZlj\n7DY2Qc3fQ+UmPj7aibPZMTf3ny0rCIZg8wD4T7hDQ99L1FwBYZEGsPyI+l9GQFQQ\nr5+bz315YVwUuFtRjbooAEAtNwKBgQDH/JYeXoMlvAslh9fiXdFuhcYcs+dxViUp\nV2YoEZti1RhKZSMj4Nr/RlYiNP9Ba8569RW8OPC9WNQ9QZhrza+8063thiPg0lWh\nEWYy8NGDgRvdKlPtuIM5x3S0Yp9uFzkxsQ1FgnlQYj4p+4MkJmO0lqDtwUTY2ebB\nofA87WbJLwKBgDvm+gMger8+2i6avwe3gE2MoSiEAirL0XlLk1M0kVTrPOFVmcUN\nd6jvILiK6Xvn3XVrO5m+BKZ7zsQmCHzexyNZztcog6JfEYrUijL11UfvaF/VhqPk\n5lmvaa/PwY2I1KHpoi7Vw+fP3qsPSvN/RhwH9f9Fh+fuSymMwNy9ourlAoGBAK0s\nThnyIYKVeNmA7jI4p1gbQtgr+OgtfnR0GCPuSy2j9SrGtU0mMr0GfSOV3MsbvWq/\nu5iHff+YYgDBQmlnbRwH+P5LP9o4iKm21VabLfG/5Q74zkB1nDx2ONrS49eDCKW8\n+Q8N0lsHF2lnP8IX9BK2tJfs2d8loSpfPhakRHNFAoGBAMAAVCv26gSPZNn8X4D/\nQx28Cdz2nhul75RdQ4JnGBKEc2OrwlxLiZgBIlen4lK4u2iILOTFfcz072SYQJTi\nOON31ihd+bJ7XUxatsHPHYP370n72Jn24mXwIaKAtqMg2hbV0laL3/t7Iomb6wv7\ndHfPlk2T7q9HP/0TvbryWdlW\n-----END PRIVATE KEY-----\n".to_string(),
-        // };
 
         let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
         let exp = now + 3600; // 1h
@@ -299,7 +292,6 @@ impl GoogleSheetsService {
         let mut map: HashMap<String, Vec<InvoiceItem>> = HashMap::new();
         let mut current_date = String::new();
 
-        // Lấy mảng "values" trong JSON
         let Some(values_array) = value.get("values").and_then(|v| v.as_array()) else {
             return vec![];
         };
@@ -313,23 +305,19 @@ impl GoogleSheetsService {
                 continue;
             }
 
-            // Lấy dữ liệu từng cột
             let date = row[0].as_str().unwrap_or("-").trim();
             let name = row[1].as_str().unwrap_or("").trim().to_string();
             let cash_price = parse_vietnamese_number(row[2].as_str().unwrap_or("0")).unwrap_or(0.0);
             let bank_price = parse_vietnamese_number(row[3].as_str().unwrap_or("0")).unwrap_or(0.0);
 
-            // Cập nhật ngày hiện tại nếu có giá trị
             if date != "-" && !date.is_empty() {
                 current_date = date.to_string();
             }
 
-            // Bỏ qua nếu chưa có ngày hợp lệ
             if current_date.is_empty() {
                 continue;
             }
 
-            // Tạo item và thêm vào nhóm theo ngày
             let item = InvoiceItem {
                 name,
                 cash_price,
@@ -339,20 +327,16 @@ impl GoogleSheetsService {
             map.entry(current_date.clone()).or_default().push(item);
         }
 
-        // Chuyển HashMap -> Vec<ListInvoiceItems>
         let mut result: Vec<ListInvoiceItems> = map
             .into_iter()
             .map(|(date, items)| ListInvoiceItems { date, items })
             .collect();
-
-        // Sắp xếp theo ngày (nếu muốn)
 
         result.sort_by_key(|item| {
             let d = NaiveDate::parse_from_str(item.date.trim(), "%d/%m/%Y")
                 .unwrap_or_else(|_| NaiveDate::from_ymd_opt(0, 1, 1).unwrap());
             Reverse(d)
         });
-
         result
     }
 }

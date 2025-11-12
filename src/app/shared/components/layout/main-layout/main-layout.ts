@@ -41,7 +41,6 @@ export class MainLayout {
             },
         ];
 
-        // 👇 Lắng nghe sự kiện điều hướng xong thì đóng drawer
         this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
             if (this.isDrawerOpen) {
                 this.toggleDrawer();
@@ -52,7 +51,6 @@ export class MainLayout {
     toggleDrawer() {
         this.isDrawerOpen = !this.isDrawerOpen;
 
-        // Thêm / gỡ class overflow-hidden để khóa scroll khi drawer mở
         if (this.isDrawerOpen) {
             document.body.classList.add('overflow-hidden');
         } else {
