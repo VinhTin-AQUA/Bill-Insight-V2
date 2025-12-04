@@ -6,6 +6,8 @@ on:
     push:
         branches:
             - main
+        tags:
+          - 'v*'
 
     workflow_dispatch:
 
@@ -91,6 +93,18 @@ jobs:
             - name: Rename APK file
               run: |
                   mv ./src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk ./src-tauri/gen/android/app/build/outputs/apk/universal/release/bill-insight-${{ steps.package-version.outputs.current-version}}.apk
+
+            - name: Delete existing release (if exists)
+              run: |
+                TAG_NAME=${GITHUB_REF#refs/tags/}
+
+                # Xóa release nếu tồn tại
+                gh release delete "$TAG_NAME" -y || echo "Release not found"
+
+                # Xóa tag remote nếu tồn tại
+                git push --delete origin "$TAG_NAME" || echo "Tag not found"
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Create Tag
               run: |
