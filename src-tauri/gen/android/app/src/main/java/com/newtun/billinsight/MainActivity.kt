@@ -1,15 +1,14 @@
 package com.newtun.billinsight
 
 import android.os.Bundle
-
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.ViewCompat
 
-
 class MainActivity : TauriActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
+
     super.onCreate(savedInstanceState)
 
     // Allow content to extend under the system bars
@@ -30,12 +29,5 @@ class MainActivity : TauriActivity() {
         window.attributes.layoutInDisplayCutoutMode =
             android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
     }
-
-
-    
-
-
-       
-
   }
 }
