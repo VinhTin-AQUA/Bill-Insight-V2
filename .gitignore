@@ -42,7 +42,7 @@ testem.log
 Thumbs.db
 
 # Android keystore files
-*.keystore
+# *.keystore
 *.jks
 src-tauri/target
 target
