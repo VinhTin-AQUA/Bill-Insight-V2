@@ -6,8 +6,6 @@ on:
     push:
         branches:
             - main
-        tags:
-          - 'v*'
 
     workflow_dispatch:
 
@@ -18,6 +16,9 @@ jobs:
             contents: write
         steps:
             - uses: actions/checkout@v4
+
+            - name: Setup GitHub CLI
+              uses: cli/cli@v3
 
             - name: Setup Java
               uses: actions/setup-java@v4
@@ -94,17 +95,26 @@ jobs:
               run: |
                   mv ./src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk ./src-tauri/gen/android/app/build/outputs/apk/universal/release/bill-insight-${{ steps.package-version.outputs.current-version}}.apk
 
-            - name: Delete existing release (if exists)
+
+            - name: Xóa release cũ (nếu tồn tại)
               run: |
-                TAG_NAME=${GITHUB_REF#refs/tags/}
-
-                # Xóa release nếu tồn tại
-                gh release delete "$TAG_NAME" -y || echo "Release not found"
-
-                # Xóa tag remote nếu tồn tại
-                git push --delete origin "$TAG_NAME" || echo "Tag not found"
+                if gh release view "App v${{ steps.package-version.outputs.current-version}}" &>/dev/null; then
+                  echo "Deleting old release..."
+                  gh release delete "App v${{ steps.package-version.outputs.current-version}}" -y
+                else
+                  echo "No old release found."
+                fi
               env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Xóa tag cũ (nếu tồn tại)
+              run: |
+                if git ls-remote --tags origin | grep -q "refs/tags/App v${{ steps.package-version.outputs.current-version }}"; then
+                  echo "Deleting old tag..."
+                  git push origin :refs/tags/"App v${{ steps.package-version.outputs.current-version }}"
+                else
+                  echo "No old tag found."
+                fi
 
             - name: Create Tag
               run: |
